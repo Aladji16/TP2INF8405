@@ -1,5 +1,7 @@
 package com.example.tp2inf8405;
 
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
@@ -12,6 +14,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -35,6 +38,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 //        http://www.londatiga.net/it/programming/android/how-to-programmatically-scan-or-discover-android-bluetooth-device/
 //        https://stackoverflow.com/questions/38512993/bluetooth-action-found-broadcastreceiver-is-not-working
 //        https://www.geeksforgeeks.org/android-how-to-request-permissions-in-android-application/
+//        action_state_changed https://www.programcreek.com/java-api-examples/?class=android.bluetooth.BluetoothAdapter&method=ACTION_STATE_CHANGED
 
 
 
@@ -49,42 +53,86 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         if (!bluetoothAdapter.isEnabled()) {
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBtIntent, 1);
+
+
+            //nécessité de demander l'autorisation pour ACCESS_COARSE_LOCATION
+            int permissionCheck = ContextCompat.checkSelfPermission(getBaseContext(), Manifest.permission.ACCESS_COARSE_LOCATION);
+            Log.d("granted", String.valueOf(permissionCheck));
+            if (permissionCheck != PackageManager.PERMISSION_GRANTED )
+            {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, 2);
+            }
+
+
         }
 
-        //nécessité de demander l'autorisation pour ACCESS_COARSE_LOCATION
-        int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION);
-        if (permissionCheck != PackageManager.PERMISSION_GRANTED )
-        {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
+        else {
+            //nécessité de demander l'autorisation pour ACCESS_COARSE_LOCATION
+            int permissionCheck = ContextCompat.checkSelfPermission(getBaseContext(), Manifest.permission.ACCESS_COARSE_LOCATION);
+            Log.d("granted", String.valueOf(permissionCheck));
+            if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, 2);
+            }
+
+
         }
-
-        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
-        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
-//        filter.addAction(BluetoothDevice.ACTION_FOUND);
-
-        registerReceiver(receiver, filter);
-        bluetoothAdapter.startDiscovery();
-
-        String test = bluetoothAdapter.getAddress();
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        Log.d("STATE", "test");
 
-        Log.d("STATE", test);
+        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
+        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+        filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
+
+//        filter.addAction(BluetoothDevice.ACTION_FOUND);
+        registerReceiver(receiver, filter);
+        bluetoothAdapter.startDiscovery();
+
 
     }
 
 
+
+
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
+        @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             Log.d("ACTION",action);
-            if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)) {
+
+            if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)) {
+                //state change of bluetooth
+                int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, -1);
+                switch (state) {
+                    case BluetoothAdapter.STATE_TURNING_OFF:
+                        Log.d("blutoh state", "turnin off");
+                        break;
+
+                    case BluetoothAdapter.STATE_OFF:
+                        Log.d("blutoh state", "off");
+                        //surement besoin d'un message/toast "vous avez besoin de bluetooth pour..."
+                        break;
+
+
+                    case BluetoothAdapter.STATE_TURNING_ON:
+                        Log.d("blutoh state", "turnin on");
+                        break;
+
+
+                    case BluetoothAdapter.STATE_ON:
+                        Log.d("blutoh state", "on");
+                        bluetoothAdapter.startDiscovery();
+                        break;
+                }
+
+
+            }
+
+            else if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)) {
                 //discovery starts, we can show progress dialog or perform other tasks
                 Log.d("STATE", "DISCOVERY BEGIN");
             }
@@ -92,7 +140,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
                 //discovery starts, we can show progress dialog or perform other tasks
                 Log.d("STATE", "DISCOVERY END");
-//                bluetoothAdapter.startDiscovery();
+                bluetoothAdapter.startDiscovery();
             }
             else if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 // Discovery has found a device. Get the BluetoothDevice
@@ -100,6 +148,28 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 Log.d("STATE","DEVICE FOUND");
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 String deviceName = device.getName();
+                int deviceType = device.getType();
+                switch(deviceType) {
+
+                    case BluetoothDevice.DEVICE_TYPE_CLASSIC:
+                        Log.d("TYPE", "Classic");
+                        break;
+
+                    case BluetoothDevice.DEVICE_TYPE_LE:
+                        Log.d("TYPE", "Low Energy");
+                        break;
+
+                    case BluetoothDevice.DEVICE_TYPE_DUAL:
+                        Log.d("TYPE", "Dual");
+                        break;
+
+
+                    case BluetoothDevice.DEVICE_TYPE_UNKNOWN:
+                        Log.d("TYPE", "Unknown");
+                        break;
+                }
+
+
                 String deviceHardwareAddress = device.getAddress(); // MAC address
                 Log.d("STATE",deviceName + " " + deviceHardwareAddress);
             }
