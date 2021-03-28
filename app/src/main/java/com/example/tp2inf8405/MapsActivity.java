@@ -1,5 +1,6 @@
 package com.example.tp2inf8405;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -14,21 +15,37 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Looper;
 import android.util.Log;
+import android.widget.Toast;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
-    public  BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+    private BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+    private Location mLastLocation; //https://developer.android.com/codelabs/advanced-android-training-device-location#3
+    private LocationRequest locationRequest; //https://developer.android.com/training/location/request-updates
+    private LocationCallback locationCallback; //https://developer.android.com/training/location/request-updates
+
+
+    private FusedLocationProviderClient mFusedLocationClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,11 +57,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 //        https://www.geeksforgeeks.org/android-how-to-request-permissions-in-android-application/
 //        action_state_changed https://www.programcreek.com/java-api-examples/?class=android.bluetooth.BluetoothAdapter&method=ACTION_STATE_CHANGED
 
-
-
-
-
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
@@ -55,32 +67,84 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             startActivityForResult(enableBtIntent, 1);
 
 
-            //nécessité de demander l'autorisation pour ACCESS_COARSE_LOCATION
-            int permissionCheck = ContextCompat.checkSelfPermission(getBaseContext(), Manifest.permission.ACCESS_COARSE_LOCATION);
-            Log.d("granted", String.valueOf(permissionCheck));
-            if (permissionCheck != PackageManager.PERMISSION_GRANTED )
+            //nécessité de demander l'autorisation pour l'accès aux localisations
+            int permissionCheck1 = ContextCompat.checkSelfPermission(getBaseContext(), Manifest.permission.ACCESS_COARSE_LOCATION);
+            int permissionCheck2 = ContextCompat.checkSelfPermission(getBaseContext(), Manifest.permission.ACCESS_FINE_LOCATION);
+
+            if (permissionCheck1 != PackageManager.PERMISSION_GRANTED || permissionCheck2 != PackageManager.PERMISSION_GRANTED)
             {
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, 2);
             }
-
-
         }
 
         else {
-            //nécessité de demander l'autorisation pour ACCESS_COARSE_LOCATION
-            int permissionCheck = ContextCompat.checkSelfPermission(getBaseContext(), Manifest.permission.ACCESS_COARSE_LOCATION);
-            Log.d("granted", String.valueOf(permissionCheck));
-            if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
+            //nécessité de demander l'autorisation pour l'accès aux localisations
+            int permissionCheck1 = ContextCompat.checkSelfPermission(getBaseContext(), Manifest.permission.ACCESS_COARSE_LOCATION);
+            int permissionCheck2 = ContextCompat.checkSelfPermission(getBaseContext(), Manifest.permission.ACCESS_FINE_LOCATION);
+
+            if (permissionCheck1 != PackageManager.PERMISSION_GRANTED || permissionCheck2 != PackageManager.PERMISSION_GRANTED)
+            {
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, 2);
             }
-
-
         }
+
+
+
+
+
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        mFusedLocationClient.getLastLocation().addOnSuccessListener(
+                new OnSuccessListener<Location>() {
+                    @Override
+                    public void onSuccess(Location location) {
+                        if (location != null) {
+                            mLastLocation = location;
+                            String latitude = String.valueOf(mLastLocation.getLatitude());
+                            String longitude = String.valueOf(mLastLocation.getLongitude());
+                            String time = String.valueOf(mLastLocation.getTime());
+                            Log.d("location", latitude + " " + longitude + " " + time);
+                        } else {
+                            Log.d("location", "no location found");
+                        }
+                    }
+                });
+
+
+
+        locationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                if (locationResult == null) {
+                    Log.d("frère","je sais plus");
+                    return;
+                }
+                for (Location location : locationResult.getLocations()) {
+                    Log.d("location test","");
+                    mLastLocation = location;
+                    String latitude = String.valueOf(mLastLocation.getLatitude());
+                    String longitude = String.valueOf(mLastLocation.getLongitude());
+                    String time = String.valueOf(mLastLocation.getTime());
+                    Log.d("location", latitude + " " + longitude + " " + time);
+
+                }
+            }
+        };
+
+        LocationRequest locationRequest = LocationRequest.create();
+        locationRequest.setInterval(10000);
+        locationRequest.setFastestInterval(5000);
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+        startLocationUpdates();
+
+
 
 
         IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
@@ -91,6 +155,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 //        filter.addAction(BluetoothDevice.ACTION_FOUND);
         registerReceiver(receiver, filter);
         bluetoothAdapter.startDiscovery();
+        mFusedLocationClient.getLastLocation();
+
 
 
     }
@@ -109,17 +175,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, -1);
                 switch (state) {
                     case BluetoothAdapter.STATE_TURNING_OFF:
-                        Log.d("blutoh state", "turnin off");
+//                        Log.d("blutoh state", "turnin off");
                         break;
 
                     case BluetoothAdapter.STATE_OFF:
-                        Log.d("blutoh state", "off");
+//                        Log.d("blutoh state", "off");
                         //surement besoin d'un message/toast "vous avez besoin de bluetooth pour..."
                         break;
 
 
                     case BluetoothAdapter.STATE_TURNING_ON:
-                        Log.d("blutoh state", "turnin on");
+//                        Log.d("blutoh state", "turnin on");
                         break;
 
 
@@ -128,8 +194,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         bluetoothAdapter.startDiscovery();
                         break;
                 }
-
-
             }
 
             else if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)) {
@@ -148,33 +212,75 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 Log.d("STATE","DEVICE FOUND");
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 String deviceName = device.getName();
-                int deviceType = device.getType();
-                switch(deviceType) {
+                String deviceAlias = device.getAlias();
+                String deviceType = " ";
+                switch(device.getType()) {
 
                     case BluetoothDevice.DEVICE_TYPE_CLASSIC:
-                        Log.d("TYPE", "Classic");
+                        deviceType = "Classic";
                         break;
 
                     case BluetoothDevice.DEVICE_TYPE_LE:
-                        Log.d("TYPE", "Low Energy");
+                        deviceType = "Low Energy";
+
                         break;
 
                     case BluetoothDevice.DEVICE_TYPE_DUAL:
-                        Log.d("TYPE", "Dual");
+                        deviceType = "Dual";
+
                         break;
 
 
                     case BluetoothDevice.DEVICE_TYPE_UNKNOWN:
-                        Log.d("TYPE", "Unknown");
+                        deviceType = "Unknown";
+
                         break;
                 }
 
 
                 String deviceHardwareAddress = device.getAddress(); // MAC address
-                Log.d("STATE",deviceName + " " + deviceHardwareAddress);
+                Log.d("STATE",deviceName + " " + deviceAlias + " " + deviceType + " " + deviceHardwareAddress);
             }
         }
     };
+
+    private void startLocationUpdates() {
+        //nécessité de demander l'autorisation pour l'accès aux localisations
+        int permissionCheck1 = ContextCompat.checkSelfPermission(getBaseContext(), Manifest.permission.ACCESS_COARSE_LOCATION);
+        int permissionCheck2 = ContextCompat.checkSelfPermission(getBaseContext(), Manifest.permission.ACCESS_FINE_LOCATION);
+
+        if (permissionCheck1 != PackageManager.PERMISSION_GRANTED || permissionCheck2 != PackageManager.PERMISSION_GRANTED)
+        {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, 2);
+        }
+
+        mFusedLocationClient.requestLocationUpdates(locationRequest,
+                locationCallback,
+                Looper.getMainLooper());
+    }
+
+
+
+    //au cas où, peut etre à utiliser, lorsqu'on demande permission
+//    @Override
+//    public void onRequestPermissionsResult(int requestCode,
+//                                           @NonNull String[] permissions, @NonNull int[] grantResults) {
+//        switch (requestCode) {
+//            case 2:
+//                // If the permission is granted, get the location,
+//                // otherwise, show a Toast
+//                if (grantResults.length > 0
+//                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+//                    getLocation();
+//                } else {
+//                    Toast.makeText(this,
+//                            R.string.location_permission_denied,
+//                            Toast.LENGTH_SHORT).show();
+//                }
+//                break;
+//        }
+//    }
+
 
 
     @Override
