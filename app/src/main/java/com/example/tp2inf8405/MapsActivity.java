@@ -36,6 +36,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
@@ -75,6 +76,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+
+//        Get all locationIDs already in Firebase DB
+        getAllInitLocationKeys();
 
 //        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
@@ -301,6 +305,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                 String deviceHardwareAddress = currentDevice.getAddress(); // MAC address
                 Log.d("STATE",deviceName + " " + deviceAlias + " " + deviceType + " " + deviceHardwareAddress);
+                updateDeviceLocation(deviceHardwareAddress);
 
                 String lastLocationKey = locationKeys.get(locationKeys.size() - 1);
                 dbRef = dbRootNode.getReference("locations/" + lastLocationKey);
@@ -417,5 +422,47 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 });
         final AlertDialog alert = builder.create();
         alert.show();
+    }
+
+    private void updateDeviceLocation(String deviceHardwareAddress) {
+        for (int i = 0; i < locationKeys.size() - 1; i++) {
+            String currentKey = locationKeys.get(i);
+            dbRef = dbRootNode.getReference("locations/" + currentKey);
+
+            dbRef.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<DataSnapshot> task) {
+                    if (!task.isSuccessful()) {
+                        Log.e("firebase", "Error getting data", task.getException());
+                    } else {
+                        for (DataSnapshot d: task.getResult().getChildren()) {
+                            Log.d("firebase MAC addr", d.getKey());
+                            if (d.getKey().equals(deviceHardwareAddress)) {
+                                d.getRef().removeValue();
+                                Log.d("firebase MAC addr", "Removing device " + deviceHardwareAddress + " from location " + currentKey);
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    private void getAllInitLocationKeys() {
+        dbRef = dbRootNode.getReference("locations");
+        dbRef.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DataSnapshot> task) {
+                if (!task.isSuccessful()) {
+                    Log.e("firebase", "Error getting data", task.getException());
+                }
+                else {
+                    for (DataSnapshot d: task.getResult().getChildren()) {
+                        Log.d("firebase location key", d.getKey());
+                        locationKeys.add(d.getKey());
+                    }
+                }
+            }
+        });
     }
 }
