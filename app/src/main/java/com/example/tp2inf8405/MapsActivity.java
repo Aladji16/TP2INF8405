@@ -35,6 +35,15 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -43,10 +52,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private Location mLastLocation; //https://developer.android.com/codelabs/advanced-android-training-device-location#3
     private LocationRequest locationRequest; //https://developer.android.com/training/location/request-updates
     private LocationCallback locationCallback; //https://developer.android.com/training/location/request-updates
-
+    private BluetoothDevice currentDevice;
+    private DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
+    private List<String> locationKeys = new ArrayList<String>();
 
     private FusedLocationProviderClient mFusedLocationClient;
 
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 //        https://developer.android.com/guide/topics/connectivity/bluetooth
@@ -89,7 +101,25 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
 
 
+        // TEST DB 1 time
+        // Handle Firebase DB Listeners
 
+        // Read from the database
+        dbRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                // This method is called once with the initial value and again
+                // whenever data at this location is updated.
+//                String value = dataSnapshot.getValue(String.class);
+                Log.d("TAG", "onDataChanged!");
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {
+                // Failed to read value
+                Log.d("TAG", "Failed to read value.", error.toException());
+            }
+        });
 
 
 
@@ -105,11 +135,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     @Override
                     public void onSuccess(Location location) {
                         if (location != null) {
-                            mLastLocation = location;
-                            String latitude = String.valueOf(mLastLocation.getLatitude());
-                            String longitude = String.valueOf(mLastLocation.getLongitude());
+                            double latitude = location.getLatitude();
+                            double longitude = location.getLongitude();
+                            if (mLastLocation == null || isLatitudeDistantEnough(latitude)
+                                    || isLongitudeDistantEnough(longitude)) {
+                                mLastLocation = location;
+                                String locationKey = dbRef.child("locations").push().getKey();
+                                Log.d("locationkey", locationKey);
+                                locationKeys.add(locationKey);
+                                dbRef.child(locationKey).child("latitude").setValue(latitude);
+                                dbRef.child(locationKey).child("longitude").setValue(longitude);
+                            }
+
                             String time = String.valueOf(mLastLocation.getTime());
-                            Log.d("location", latitude + " " + longitude + " " + time);
+                            Log.d("location", String.valueOf(latitude) + " " + String.valueOf(longitude) + " " + time);
+
                         } else {
                             Log.d("location", "no location found");
                         }
@@ -126,13 +166,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     return;
                 }
                 for (Location location : locationResult.getLocations()) {
-                    Log.d("location test","");
-                    mLastLocation = location;
-                    String latitude = String.valueOf(mLastLocation.getLatitude());
-                    String longitude = String.valueOf(mLastLocation.getLongitude());
-                    String time = String.valueOf(mLastLocation.getTime());
-                    Log.d("location", latitude + " " + longitude + " " + time);
+                    double latitude = location.getLatitude();
+                    double longitude = location.getLongitude();
+                    if (mLastLocation == null || isLatitudeDistantEnough(latitude)
+                            || isLongitudeDistantEnough(longitude)) {
+                        mLastLocation = location;
+                        String locationKey = dbRef.child("locations").push().getKey();
+                        Log.d("locationkey", locationKey);
+                        locationKeys.add(locationKey);
+                        dbRef.child(locationKey).child("latitude").setValue(latitude);
+                        dbRef.child(locationKey).child("longitude").setValue(longitude);
+                    }
 
+                    String time = String.valueOf(mLastLocation.getTime());
+                    Log.d("location", String.valueOf(latitude) + " " + String.valueOf(longitude) + " " + time);
                 }
             }
         };
@@ -156,8 +203,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         registerReceiver(receiver, filter);
         bluetoothAdapter.startDiscovery();
         mFusedLocationClient.getLastLocation();
-
-
 
     }
 
@@ -204,17 +249,26 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
                 //discovery starts, we can show progress dialog or perform other tasks
                 Log.d("STATE", "DISCOVERY END");
-                bluetoothAdapter.startDiscovery();
+               // bluetoothAdapter.startDiscovery();
             }
             else if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 // Discovery has found a device. Get the BluetoothDevice
                 // object and its info from the Intent.
                 Log.d("STATE","DEVICE FOUND");
-                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                String deviceName = device.getName();
-                String deviceAlias = device.getAlias();
+
+                currentDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                String deviceName = currentDevice.getName();
+                if (deviceName == null) {
+                    deviceName = "Unknown";
+                }
+
+                String deviceAlias = currentDevice.getAlias();
+                if (deviceAlias == null) {
+                    deviceAlias = "Unknown";
+                }
+
                 String deviceType = " ";
-                switch(device.getType()) {
+                switch(currentDevice.getType()) {
 
                     case BluetoothDevice.DEVICE_TYPE_CLASSIC:
                         deviceType = "Classic";
@@ -238,8 +292,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 }
 
 
-                String deviceHardwareAddress = device.getAddress(); // MAC address
+                String deviceHardwareAddress = currentDevice.getAddress(); // MAC address
                 Log.d("STATE",deviceName + " " + deviceAlias + " " + deviceType + " " + deviceHardwareAddress);
+
+                String lastLocationKey = locationKeys.get(locationKeys.size() - 1);
+                // Write a message to the database
+                dbRef.child(lastLocationKey).child(deviceHardwareAddress).child("name").setValue(deviceName);
+                dbRef.child(lastLocationKey).child(deviceHardwareAddress).child("alias").setValue(deviceAlias);
+                dbRef.child(lastLocationKey).child(deviceHardwareAddress).child("type").setValue(deviceType);
             }
         }
     };
@@ -259,7 +319,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 Looper.getMainLooper());
     }
 
+    // Algos pour determiner si la localization retrouvee est assez loin
+    private boolean isLatitudeDistantEnough(double latitude) {
+        double distance = Math.abs(latitude - mLastLocation.getLatitude());
+        return distance >= 0.001;
+    }
 
+    // Algos pour determiner si la localization retrouvee est assez loin
+    private boolean isLongitudeDistantEnough(double longitude) {
+        double distance = Math.abs(longitude - mLastLocation.getLongitude());
+        return distance >= 0.001;
+    }
 
     //au cas où, peut etre à utiliser, lorsqu'on demande permission
 //    @Override
