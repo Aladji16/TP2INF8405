@@ -61,7 +61,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 //        action_state_changed https://www.programcreek.com/java-api-examples/?class=android.bluetooth.BluetoothAdapter&method=ACTION_STATE_CHANGED
 
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_maps);
 
 //        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
@@ -96,10 +95,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
 
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
+
 
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
@@ -113,6 +109,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             String longitude = String.valueOf(mLastLocation.getLongitude());
                             String time = String.valueOf(mLastLocation.getTime());
                             Log.d("location", latitude + " " + longitude + " " + time);
+
+                            LatLng myPos = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
+                            mMap.addMarker(new MarkerOptions().position(myPos).title("Your position"));
+                            mMap.moveCamera(CameraUpdateFactory.newLatLng(myPos));
                         } else {
                             Log.d("location", "no location found");
                         }
@@ -121,33 +121,41 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
 
+        mFusedLocationClient.getLastLocation();
+
+        setContentView(R.layout.test);
+
+
+        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.mapView);
+        mapFragment.getMapAsync(this);
+
+
+
         locationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult locationResult) {
-                if (locationResult == null) {
-                    Log.d("frère","je sais plus");
-                    return;
-                }
-                for (Location location : locationResult.getLocations()) {
-                    Log.d("location test","");
-                    mLastLocation = location;
-                    String latitude = String.valueOf(mLastLocation.getLatitude());
-                    String longitude = String.valueOf(mLastLocation.getLongitude());
-                    String time = String.valueOf(mLastLocation.getTime());
-                    Log.d("location", latitude + " " + longitude + " " + time);
+                mLastLocation = locationResult.getLastLocation();
+                String latitude = String.valueOf(mLastLocation.getLatitude());
+                String longitude = String.valueOf(mLastLocation.getLongitude());
+                String time = String.valueOf(mLastLocation.getTime());
+                Log.d("location_test", latitude + " " + longitude + " " + time);
+                LatLng myPos = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
+                mMap.addMarker(new MarkerOptions().position(myPos).title("Your position"));
+                mMap.moveCamera(CameraUpdateFactory.newLatLng(myPos));
 
                 }
-            }
         };
+
 
         locationRequest = LocationRequest.create();
         locationRequest.setInterval(10000);
         locationRequest.setFastestInterval(5000);
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
+
         startLocationUpdates();
-
-
 
 
         IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
@@ -158,7 +166,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 //        filter.addAction(BluetoothDevice.ACTION_FOUND);
         registerReceiver(receiver, filter);
         bluetoothAdapter.startDiscovery();
-        mFusedLocationClient.getLastLocation();
 
 
 
@@ -215,7 +222,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 Log.d("STATE","DEVICE FOUND");
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 String deviceName = device.getName();
-                String deviceAlias = device.getAlias();
+                String deviceAlias = null;
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+                    deviceAlias = device.getAlias();
+                }
                 String deviceType = " ";
                 switch(device.getType()) {
 
@@ -264,28 +274,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
 
-    //au cas où, peut etre à utiliser, lorsqu'on demande permission
-//    @Override
-//    public void onRequestPermissionsResult(int requestCode,
-//                                           @NonNull String[] permissions, @NonNull int[] grantResults) {
-//        switch (requestCode) {
-//            case 2:
-//                // If the permission is granted, get the location,
-//                // otherwise, show a Toast
-//                if (grantResults.length > 0
-//                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-//                    getLocation();
-//                } else {
-//                    Toast.makeText(this,
-//                            R.string.location_permission_denied,
-//                            Toast.LENGTH_SHORT).show();
-//                }
-//                break;
-//        }
-//    }
-
-
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -311,13 +299,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap = googleMap;
 
         // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+
+        LatLng myPos = new LatLng(30, 30);
+        mMap.addMarker(new MarkerOptions().position(myPos).title("Your position"));
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(myPos));
     }
 
 
-    public void statusCheck() {
+    public void statusCheck() { //https://stackoverflow.com/questions/25175522/how-to-enable-location-access-programmatically-in-android
         final LocationManager manager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
         if (!manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
@@ -343,4 +332,31 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         final AlertDialog alert = builder.create();
         alert.show();
     }
+
+
+
+
+
+
+    //au cas où, peut etre à utiliser, lorsqu'on demande permission
+//    @Override
+//    public void onRequestPermissionsResult(int requestCode,
+//                                           @NonNull String[] permissions, @NonNull int[] grantResults) {
+//        switch (requestCode) {
+//            case 2:
+//                // If the permission is granted, get the location,
+//                // otherwise, show a Toast
+//                if (grantResults.length > 0
+//                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+//                    getLocation();
+//                } else {
+//                    Toast.makeText(this,
+//                            R.string.location_permission_denied,
+//                            Toast.LENGTH_SHORT).show();
+//                }
+//                break;
+//        }
+//    }
+
 }
+
