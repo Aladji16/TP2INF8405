@@ -56,7 +56,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private LocationRequest locationRequest; //https://developer.android.com/training/location/request-updates
     private LocationCallback locationCallback; //https://developer.android.com/training/location/request-updates
     private BluetoothDevice currentDevice;
-    private DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
+    private FirebaseDatabase dbRootNode = FirebaseDatabase.getInstance();
+    private DatabaseReference dbRef = dbRootNode.getReference();
     private List<String> locationKeys = new ArrayList<String>();
 
     private FusedLocationProviderClient mFusedLocationClient;
@@ -144,11 +145,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             if (mLastLocation == null || isLatitudeDistantEnough(latitude)
                                     || isLongitudeDistantEnough(longitude)) {
                                 mLastLocation = location;
-                                String locationKey = dbRef.child("locations").push().getKey();
+                                dbRef = dbRootNode.getReference("locations").push();
+                                String locationKey = dbRef.getKey();
                                 Log.d("locationkey", locationKey);
                                 locationKeys.add(locationKey);
-                                dbRef.child(locationKey).child("latitude").setValue(latitude);
-                                dbRef.child(locationKey).child("longitude").setValue(longitude);
+                                dbRef.child("latitude").setValue(latitude);
+                                dbRef.child("longitude").setValue(longitude);
                             }
 
                             String time = String.valueOf(mLastLocation.getTime());
@@ -175,11 +177,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     if (mLastLocation == null || isLatitudeDistantEnough(latitude)
                             || isLongitudeDistantEnough(longitude)) {
                         mLastLocation = location;
-                        String locationKey = dbRef.child("locations").push().getKey();
+                        dbRef = dbRootNode.getReference("locations").push();
+                        String locationKey = dbRef.getKey();
                         Log.d("locationkey", locationKey);
                         locationKeys.add(locationKey);
-                        dbRef.child(locationKey).child("latitude").setValue(latitude);
-                        dbRef.child(locationKey).child("longitude").setValue(longitude);
+                        dbRef.child("latitude").setValue(latitude);
+                        dbRef.child("longitude").setValue(longitude);
                     }
 
                     String time = String.valueOf(mLastLocation.getTime());
@@ -300,10 +303,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 Log.d("STATE",deviceName + " " + deviceAlias + " " + deviceType + " " + deviceHardwareAddress);
 
                 String lastLocationKey = locationKeys.get(locationKeys.size() - 1);
+                dbRef = dbRootNode.getReference("locations/" + lastLocationKey);
                 // Write a message to the database
-                dbRef.child(lastLocationKey).child(deviceHardwareAddress).child("name").setValue(deviceName);
-                dbRef.child(lastLocationKey).child(deviceHardwareAddress).child("alias").setValue(deviceAlias);
-                dbRef.child(lastLocationKey).child(deviceHardwareAddress).child("type").setValue(deviceType);
+                dbRef.child(deviceHardwareAddress).child("name").setValue(deviceName);
+                dbRef.child(deviceHardwareAddress).child("alias").setValue(deviceAlias);
+                dbRef.child(deviceHardwareAddress).child("type").setValue(deviceType);
             }
         }
     };
