@@ -23,6 +23,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
 import android.util.Log;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -35,6 +36,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -46,6 +48,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private Location mLastLocation; //https://developer.android.com/codelabs/advanced-android-training-device-location#3
     private LocationRequest locationRequest; //https://developer.android.com/training/location/request-updates
     private LocationCallback locationCallback; //https://developer.android.com/training/location/request-updates
+    private Marker firstMarker;
+    private Marker currentPosMarker;
 
 
     private FusedLocationProviderClient mFusedLocationClient;
@@ -61,6 +65,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 //        action_state_changed https://www.programcreek.com/java-api-examples/?class=android.bluetooth.BluetoothAdapter&method=ACTION_STATE_CHANGED
 
         super.onCreate(savedInstanceState);
+
+
+        TextView textview = (TextView) findViewById(R.id.textView);
+
 
 //        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
@@ -94,10 +102,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         statusCheck();
 
 
-
-
-
-
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         mFusedLocationClient.getLastLocation().addOnSuccessListener(
                 new OnSuccessListener<Location>() {
@@ -107,12 +111,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             mLastLocation = location;
                             String latitude = String.valueOf(mLastLocation.getLatitude());
                             String longitude = String.valueOf(mLastLocation.getLongitude());
-                            String time = String.valueOf(mLastLocation.getTime());
-                            Log.d("location", latitude + " " + longitude + " " + time);
+                            Log.d("location", latitude + " " + longitude);
 
                             LatLng myPos = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
-                            mMap.addMarker(new MarkerOptions().position(myPos).title("Your position"));
-                            mMap.moveCamera(CameraUpdateFactory.newLatLng(myPos));
+                            firstMarker.remove(); //https://stackoverflow.com/questions/13692398/remove-a-marker-from-a-googlemap
+                            /*currentPosMarker = */mMap.addMarker(new MarkerOptions().position(myPos).title("Your position"));
+                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myPos,10));
+                            TextView textview = (TextView) findViewById(R.id.textView);
+
+                            textview.setText(latitude + " " + longitude);
+
                         } else {
                             Log.d("location", "no location found");
                         }
@@ -139,11 +147,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 mLastLocation = locationResult.getLastLocation();
                 String latitude = String.valueOf(mLastLocation.getLatitude());
                 String longitude = String.valueOf(mLastLocation.getLongitude());
-                String time = String.valueOf(mLastLocation.getTime());
-                Log.d("location_test", latitude + " " + longitude + " " + time);
+                Log.d("location_test", latitude + " " + longitude);
                 LatLng myPos = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
-                mMap.addMarker(new MarkerOptions().position(myPos).title("Your position"));
-                mMap.moveCamera(CameraUpdateFactory.newLatLng(myPos));
+//                currentPosMarker.remove();
+                /*currentPosMarker = */mMap.addMarker(new MarkerOptions().position(myPos).title("Your position"));
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myPos,10));
+
+                TextView textview = (TextView) findViewById(R.id.textView);
+
+                textview.setText(latitude + " " + longitude);
 
                 }
         };
@@ -298,11 +310,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-        // Add a marker in Sydney and move the camera
-
         LatLng myPos = new LatLng(30, 30);
-        mMap.addMarker(new MarkerOptions().position(myPos).title("Your position"));
+        firstMarker = mMap.addMarker(new MarkerOptions().position(myPos).title("Your position"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(myPos));
+//        Log.d("ZOOM", String.valueOf(mMap.getMaxZoomLevel()) + " " + String.valueOf(mMap.getMinZoomLevel()));
     }
 
 
