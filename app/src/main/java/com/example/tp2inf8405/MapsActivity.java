@@ -128,6 +128,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 Log.d("TAG", "Failed to read value.", error.toException());
             }
         });
+
+
         statusCheck();
 
 
@@ -155,6 +157,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 locationKeys.add(locationKey);
                                 dbRef.child("latitude").setValue(latitude);
                                 dbRef.child("longitude").setValue(longitude);
+                                LatLng test = new LatLng(latitude, longitude);
+                                mMap.addMarker(new MarkerOptions().position(test).title("Marker in Sydney"));
+                                mMap.moveCamera(CameraUpdateFactory.newLatLng(test));
+
                             }
 
                             String time = String.valueOf(mLastLocation.getTime());
@@ -171,10 +177,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         locationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult locationResult) {
-                if (locationResult == null) {
-                    Log.d("frère","je sais plus");
-                    return;
-                }
                 for (Location location : locationResult.getLocations()) {
                     double latitude = location.getLatitude();
                     double longitude = location.getLongitude();
@@ -187,6 +189,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         locationKeys.add(locationKey);
                         dbRef.child("latitude").setValue(latitude);
                         dbRef.child("longitude").setValue(longitude);
+                        LatLng test = new LatLng(latitude, longitude);
+                        mMap.addMarker(new MarkerOptions().position(test).title("Marker in Sydney"));
                     }
 
                     String time = String.valueOf(mLastLocation.getTime());
@@ -233,18 +237,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     case BluetoothAdapter.STATE_TURNING_OFF:
 //                        Log.d("blutoh state", "turnin off");
                         break;
-
                     case BluetoothAdapter.STATE_OFF:
 //                        Log.d("blutoh state", "off");
                         //surement besoin d'un message/toast "vous avez besoin de bluetooth pour..."
                         break;
-
-
                     case BluetoothAdapter.STATE_TURNING_ON:
 //                        Log.d("blutoh state", "turnin on");
                         break;
-
-
                     case BluetoothAdapter.STATE_ON:
                         Log.d("blutoh state", "on");
                         bluetoothAdapter.startDiscovery();
@@ -256,7 +255,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 //discovery starts, we can show progress dialog or perform other tasks
                 Log.d("STATE", "DISCOVERY BEGIN");
             }
-
             else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
                 //discovery starts, we can show progress dialog or perform other tasks
                 Log.d("STATE", "DISCOVERY END");
@@ -272,33 +270,26 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 if (deviceName == null) {
                     deviceName = "Unknown";
                 }
-
-                String deviceAlias = currentDevice.getAlias();
+                String deviceAlias = null;
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+                    deviceAlias = currentDevice.getAlias();
+                }
                 if (deviceAlias == null) {
                     deviceAlias = "Unknown";
                 }
-
                 String deviceType = " ";
                 switch(currentDevice.getType()) {
-
                     case BluetoothDevice.DEVICE_TYPE_CLASSIC:
                         deviceType = "Classic";
                         break;
-
                     case BluetoothDevice.DEVICE_TYPE_LE:
                         deviceType = "Low Energy";
-
                         break;
-
                     case BluetoothDevice.DEVICE_TYPE_DUAL:
                         deviceType = "Dual";
-
                         break;
-
-
                     case BluetoothDevice.DEVICE_TYPE_UNKNOWN:
                         deviceType = "Unknown";
-
                         break;
                 }
 
@@ -462,7 +453,30 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     for (DataSnapshot d: task.getResult().getChildren()) {
                         Log.d("firebase location key", d.getKey());
                         locationKeys.add(d.getKey());
+
                     }
+                }
+
+                for (int i = 0; i < locationKeys.size() - 1; i++) {
+                    String currentKey = locationKeys.get(i);
+                    dbRef = dbRootNode.getReference("locations/" + currentKey);
+                    dbRef.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<DataSnapshot> task) {
+                            if (!task.isSuccessful()) {
+                                Log.e("firebase", "Error getting data", task.getException());
+                            }
+                            else {
+                                double latitude = (double) task.getResult().child("latitude").getValue();
+                                double longitude = (double) task.getResult().child("longitude").getValue();
+                                LatLng test1 = new LatLng(latitude+15, longitude+15);
+                                mMap.addMarker(new MarkerOptions().position(test1).title("Marker in Sydney"));
+                                mMap.moveCamera(CameraUpdateFactory.newLatLng(test1));
+
+                            }
+                        }
+
+                    });
                 }
             }
         });
