@@ -307,12 +307,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 Log.d("STATE",deviceName + " " + deviceAlias + " " + deviceType + " " + deviceHardwareAddress);
                 updateDeviceLocation(deviceHardwareAddress);
 
-                String lastLocationKey = locationKeys.get(locationKeys.size() - 1);
-                dbRef = dbRootNode.getReference("locations/" + lastLocationKey);
-                // Write a message to the database
-                dbRef.child(deviceHardwareAddress).child("name").setValue(deviceName);
-                dbRef.child(deviceHardwareAddress).child("alias").setValue(deviceAlias);
-                dbRef.child(deviceHardwareAddress).child("type").setValue(deviceType);
+                if (locationKeys.size() > 0) {
+                    String lastLocationKey = locationKeys.get(locationKeys.size() - 1);
+                    dbRef = dbRootNode.getReference("locations/" + lastLocationKey);
+                    // Write a message to the database
+                    dbRef.child(deviceHardwareAddress).child("name").setValue(deviceName);
+                    dbRef.child(deviceHardwareAddress).child("alias").setValue(deviceAlias);
+                    dbRef.child(deviceHardwareAddress).child("type").setValue(deviceType);
+                }
             }
         }
     };
