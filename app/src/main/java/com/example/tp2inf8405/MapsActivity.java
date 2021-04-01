@@ -34,7 +34,9 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -61,6 +63,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private DatabaseReference dbRef = dbRootNode.getReference();
     private List<String> locationKeys = new ArrayList<String>();
 
+    private Marker currentPosMarker;
     private FusedLocationProviderClient mFusedLocationClient;
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
@@ -158,7 +161,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 dbRef.child("latitude").setValue(latitude);
                                 dbRef.child("longitude").setValue(longitude);
                                 LatLng test = new LatLng(latitude, longitude);
-                                mMap.addMarker(new MarkerOptions().position(test).title("Marker in Sydney"));
+                                currentPosMarker = mMap.addMarker(new MarkerOptions().position(test).icon(BitmapDescriptorFactory.fromResource(R.drawable.stickman)).title("Marker in Sydney"));
+
                                 mMap.moveCamera(CameraUpdateFactory.newLatLng(test));
 
                             }
@@ -190,7 +194,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         dbRef.child("latitude").setValue(latitude);
                         dbRef.child("longitude").setValue(longitude);
                         LatLng test = new LatLng(latitude, longitude);
-                        mMap.addMarker(new MarkerOptions().position(test).title("Marker in Sydney"));
+                        currentPosMarker.remove();
+
+                        currentPosMarker = mMap.addMarker(new MarkerOptions().position(test).icon(BitmapDescriptorFactory.fromResource(R.drawable.stickman)).title("CurrentPosition"));
+
                     }
 
                     String time = String.valueOf(mLastLocation.getTime());
@@ -223,6 +230,51 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
 
+
+    private GoogleMap.OnMarkerClickListener eventMarkerClickListener = new GoogleMap.OnMarkerClickListener() {
+        @Override
+        public boolean onMarkerClick(Marker marker) {
+            LatLng position = marker.getPosition();
+            double latitude = position.latitude;
+            double longitude = position.longitude;
+
+
+
+            for (int i = 0; i < locationKeys.size() - 1; i++) {
+                String currentKey = locationKeys.get(i);
+                dbRef = dbRootNode.getReference("locations/" + currentKey);
+                dbRef.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DataSnapshot> task) {
+                        if (!task.isSuccessful()) {
+                            Log.e("firebase", "Error getting data", task.getException());
+                        }
+                        else {
+                            double latitude_loop = (double) task.getResult().child("latitude").getValue();
+                            double longitude_loop = (double) task.getResult().child("longitude").getValue();
+                            if (latitude_loop == latitude && longitude_loop == longitude) {
+                                for (DataSnapshot d: task.getResult().getChildren()) {
+                                    Log.d("firebase MAC addr", d.getKey());
+                                    if (d.getKey().equals(deviceHardwareAddress)) {
+                                        d.getRef().removeValue();
+                                        Log.d("firebase MAC addr", "Removing device " + deviceHardwareAddress + " from location " + currentKey);
+                                    }
+                                }
+                            }
+                            LatLng test1 = new LatLng(latitude_loop, longitude_loop);
+//                            mMap.addMarker(new MarkerOptions().position(test1).icon(BitmapDescriptorFactory.fromResource(R.drawable.epingler)).title("Marker in Sydney"));
+                            mMap.moveCamera(CameraUpdateFactory.newLatLng(test1));
+
+                        }
+                    }
+
+                });
+            }
+
+
+            return false;
+        }
+    };
 
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
         @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
@@ -469,8 +521,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             else {
                                 double latitude = (double) task.getResult().child("latitude").getValue();
                                 double longitude = (double) task.getResult().child("longitude").getValue();
-                                LatLng test1 = new LatLng(latitude+15, longitude+15);
-                                mMap.addMarker(new MarkerOptions().position(test1).title("Marker in Sydney"));
+                                LatLng test1 = new LatLng(latitude, longitude);
+                                mMap.addMarker(new MarkerOptions().position(test1).icon(BitmapDescriptorFactory.fromResource(R.drawable.epingler)).title("Marker in Sydney"));
                                 mMap.moveCamera(CameraUpdateFactory.newLatLng(test1));
 
                             }
