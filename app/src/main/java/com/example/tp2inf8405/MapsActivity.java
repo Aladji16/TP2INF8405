@@ -134,6 +134,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
 
+
+
+
         statusCheck();
 
 
@@ -169,7 +172,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             }
 
                             String time = String.valueOf(mLastLocation.getTime());
-                            Log.d("location", String.valueOf(latitude) + " " + String.valueOf(longitude) + " " + time);
+//                            Log.d("location", String.valueOf(latitude) + " " + String.valueOf(longitude) + " " + time);
 
                         } else {
                             Log.d("location", "no location found");
@@ -187,7 +190,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     double longitude = location.getLongitude();
                     LatLng test = new LatLng(latitude, longitude);
 
-                    Log.d("HAHAHA", "bon c coman");
                 if (mLastLocation == null || isLatitudeDistantEnough(latitude)
                             || isLongitudeDistantEnough(longitude)) {
                         mLastLocation = location;
@@ -214,7 +216,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     }
 
                     String time = String.valueOf(mLastLocation.getTime());
-                    Log.d("location", String.valueOf(latitude) + " " + String.valueOf(longitude) + " " + time);
+//                    Log.d("location", String.valueOf(latitude) + " " + String.valueOf(longitude) + " " + time);
             }
         };
 
@@ -381,6 +383,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                 if (locationKeys.size() > 0) {
                     String lastLocationKey = locationKeys.get(locationKeys.size() - 1);
+
                     dbRef = dbRootNode.getReference("locations/" + lastLocationKey);
                     // Write a message to the database
                     dbRef.child(deviceHardwareAddress).child("name").setValue(deviceName);
@@ -399,11 +402,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         if (permissionCheck1 != PackageManager.PERMISSION_GRANTED || permissionCheck2 != PackageManager.PERMISSION_GRANTED)
         {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, 2);
+
         }
 
         mFusedLocationClient.requestLocationUpdates(locationRequest,
                 locationCallback,
-                Looper.getMainLooper());
+                null);
     }
 
     // Algos pour determiner si la localization retrouvee est assez loin
