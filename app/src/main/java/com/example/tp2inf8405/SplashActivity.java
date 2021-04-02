@@ -27,7 +27,7 @@ public class SplashActivity extends AppCompatActivity {
         handler = new Handler();
         handler.postDelayed(() -> {
             mp.stop();
-            Intent intent = new Intent(getApplicationContext(), MapsActivity.class);
+            Intent intent = new Intent(getApplicationContext(), MainView.class);
             startActivity(intent);
             finish();
         },3000);
