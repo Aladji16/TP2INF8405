@@ -77,11 +77,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 //        https://www.geeksforgeeks.org/android-how-to-request-permissions-in-android-application/
 //        action_state_changed https://www.programcreek.com/java-api-examples/?class=android.bluetooth.BluetoothAdapter&method=ACTION_STATE_CHANGED
 
+        //        Get all locationIDs already in Firebase DB
+        getAllInitLocationKeys();
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
-//        Get all locationIDs already in Firebase DB
-        getAllInitLocationKeys();
+
 
 //        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
@@ -122,7 +124,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 // This method is called once with the initial value and again
                 // whenever data at this location is updated.
 //                String value = dataSnapshot.getValue(String.class);
-                Log.d("TAG", "onDataChanged!");
+//                Log.d("TAG", "onDataChanged!");
             }
 
             @Override
@@ -131,7 +133,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 Log.d("TAG", "Failed to read value.", error.toException());
             }
         });
-
 
         statusCheck();
 
@@ -161,9 +162,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 dbRef.child("latitude").setValue(latitude);
                                 dbRef.child("longitude").setValue(longitude);
                                 LatLng test = new LatLng(latitude, longitude);
-                                currentPosMarker = mMap.addMarker(new MarkerOptions().position(test).icon(BitmapDescriptorFactory.fromResource(R.drawable.stickman)).title("Marker in Sydney"));
+                                currentPosMarker = mMap.addMarker(new MarkerOptions().position(test).icon(BitmapDescriptorFactory.fromResource(R.drawable.stickman)).title("CurrentPosition"));
 
-                                mMap.moveCamera(CameraUpdateFactory.newLatLng(test));
+                                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(test,10));
 
                             }
 
@@ -181,10 +182,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         locationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult locationResult) {
-                for (Location location : locationResult.getLocations()) {
+                    Location location = locationResult.getLastLocation();
                     double latitude = location.getLatitude();
                     double longitude = location.getLongitude();
-                    if (mLastLocation == null || isLatitudeDistantEnough(latitude)
+                    LatLng test = new LatLng(latitude, longitude);
+
+                    Log.d("HAHAHA", "bon c coman");
+                if (mLastLocation == null || isLatitudeDistantEnough(latitude)
                             || isLongitudeDistantEnough(longitude)) {
                         mLastLocation = location;
                         dbRef = dbRootNode.getReference("locations").push();
@@ -193,25 +197,28 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         locationKeys.add(locationKey);
                         dbRef.child("latitude").setValue(latitude);
                         dbRef.child("longitude").setValue(longitude);
-                        LatLng test = new LatLng(latitude, longitude);
-                        currentPosMarker.remove();
+                        if (currentPosMarker != null) {
+                            //ajouter l'épingle avec les différents device trouvés
+                            LatLng prev_pos = currentPosMarker.getPosition();
+                            double prev_latitude = prev_pos.latitude;
+                            double prev_longitude = prev_pos.longitude;
+                            mMap.addMarker(new MarkerOptions().position(prev_pos).icon(BitmapDescriptorFactory.fromResource(R.drawable.epingler)).title("Devices found in lat " + String.valueOf(prev_latitude) + " and longitude " + String.valueOf(prev_longitude)));
+
+                            currentPosMarker.remove();
+
+                        }
 
                         currentPosMarker = mMap.addMarker(new MarkerOptions().position(test).icon(BitmapDescriptorFactory.fromResource(R.drawable.stickman)).title("CurrentPosition"));
+                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(test,10));
 
                     }
 
                     String time = String.valueOf(mLastLocation.getTime());
                     Log.d("location", String.valueOf(latitude) + " " + String.valueOf(longitude) + " " + time);
-                }
             }
         };
 
-        locationRequest = LocationRequest.create();
-        locationRequest.setInterval(10000);
-        locationRequest.setFastestInterval(5000);
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
-        startLocationUpdates();
 
 
 
@@ -226,6 +233,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         bluetoothAdapter.startDiscovery();
         mFusedLocationClient.getLastLocation();
 
+
+
+        locationRequest = LocationRequest.create();
+        locationRequest.setInterval(10000);
+        locationRequest.setFastestInterval(5000);
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+        startLocationUpdates();
+
     }
 
 
@@ -234,9 +250,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private GoogleMap.OnMarkerClickListener eventMarkerClickListener = new GoogleMap.OnMarkerClickListener() {
         @Override
         public boolean onMarkerClick(Marker marker) {
-            LatLng position = marker.getPosition();
-            double latitude = position.latitude;
-            double longitude = position.longitude;
+            LatLng clicked_position = marker.getPosition();
+            double clicked_latitude = clicked_position.latitude;
+            double clicked_longitude = clicked_position.longitude;
 
 
 
@@ -250,21 +266,34 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             Log.e("firebase", "Error getting data", task.getException());
                         }
                         else {
-                            double latitude_loop = (double) task.getResult().child("latitude").getValue();
-                            double longitude_loop = (double) task.getResult().child("longitude").getValue();
-                            if (latitude_loop == latitude && longitude_loop == longitude) {
-                                for (DataSnapshot d: task.getResult().getChildren()) {
-                                    Log.d("firebase MAC addr", d.getKey());
-                                    if (d.getKey().equals(deviceHardwareAddress)) {
-                                        d.getRef().removeValue();
-                                        Log.d("firebase MAC addr", "Removing device " + deviceHardwareAddress + " from location " + currentKey);
-                                    }
-                                }
-                            }
-                            LatLng test1 = new LatLng(latitude_loop, longitude_loop);
-//                            mMap.addMarker(new MarkerOptions().position(test1).icon(BitmapDescriptorFactory.fromResource(R.drawable.epingler)).title("Marker in Sydney"));
-                            mMap.moveCamera(CameraUpdateFactory.newLatLng(test1));
+                                DataSnapshot snap_long = task.getResult().child("longitude");
+                                DataSnapshot snap_lat = task.getResult().child("latitude");
+                                double long_loop = (double) snap_long.getValue();
+                                double lat_loop = (double) snap_lat.getValue();
 
+                            String mac_addr = "", name = "", alias = "", type = "";
+
+                                for (DataSnapshot d: task.getResult().getChildren()) {
+                                    if (! d.getKey().equals("latitude") && ! d.getKey().equals("longitude"))
+                                    {
+                                        mac_addr = String.valueOf(d.getKey());
+                                        name = String.valueOf(d.child("name").getValue());
+                                        alias = String.valueOf(d.child("alias").getValue());
+                                        type = String.valueOf(d.child("type").getValue());
+//                                        if (long_loop == clicked_longitude && lat_loop == clicked_latitude)
+//                                        {
+                                            Log.d("EVENTTEST","name " + name + "\n macaddr " + mac_addr + "\n  type " + type +
+                                                    "\n  alias " + alias);
+                                            Log.d("EVENTPOS1", String.valueOf(snap_long.getValue()) + " " + String.valueOf(snap_lat.getValue()));
+                                            Log.d("EVENTPOS2", String.valueOf(clicked_longitude) + " " + String.valueOf(clicked_latitude));
+
+//                                        }
+
+
+                                    }
+
+
+                                }
                         }
                     }
 
@@ -280,7 +309,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
-            Log.d("ACTION",action);
+//            Log.d("ACTION",action);
 
             if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)) {
                 //state change of bluetooth
@@ -305,17 +334,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             else if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)) {
                 //discovery starts, we can show progress dialog or perform other tasks
-                Log.d("STATE", "DISCOVERY BEGIN");
+//                Log.d("STATE", "DISCOVERY BEGIN");
             }
             else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
                 //discovery starts, we can show progress dialog or perform other tasks
-                Log.d("STATE", "DISCOVERY END");
+//                Log.d("STATE", "DISCOVERY END");
                // bluetoothAdapter.startDiscovery();
             }
             else if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 // Discovery has found a device. Get the BluetoothDevice
                 // object and its info from the Intent.
-                Log.d("STATE","DEVICE FOUND");
+//                Log.d("STATE","DEVICE FOUND");
 
                 currentDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 String deviceName = currentDevice.getName();
@@ -347,7 +376,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
                 String deviceHardwareAddress = currentDevice.getAddress(); // MAC address
-                Log.d("STATE",deviceName + " " + deviceAlias + " " + deviceType + " " + deviceHardwareAddress);
+//                Log.d("STATE",deviceName + " " + deviceAlias + " " + deviceType + " " + deviceHardwareAddress);
                 updateDeviceLocation(deviceHardwareAddress);
 
                 if (locationKeys.size() > 0) {
@@ -389,27 +418,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         return distance >= 0.001;
     }
 
-    //au cas où, peut etre à utiliser, lorsqu'on demande permission
-//    @Override
-//    public void onRequestPermissionsResult(int requestCode,
-//                                           @NonNull String[] permissions, @NonNull int[] grantResults) {
-//        switch (requestCode) {
-//            case 2:
-//                // If the permission is granted, get the location,
-//                // otherwise, show a Toast
-//                if (grantResults.length > 0
-//                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-//                    getLocation();
-//                } else {
-//                    Toast.makeText(this,
-//                            R.string.location_permission_denied,
-//                            Toast.LENGTH_SHORT).show();
-//                }
-//                break;
-//        }
-//    }
-
-
 
     @Override
     protected void onDestroy() {
@@ -435,6 +443,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
+        mMap.setOnMarkerClickListener(eventMarkerClickListener);
         // Add a marker in Sydney and move the camera
         LatLng sydney = new LatLng(-34, 151);
         mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
@@ -480,8 +489,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     if (!task.isSuccessful()) {
                         Log.e("firebase", "Error getting data", task.getException());
                     } else {
+//                        DataSnapshot snap_long = task.getResult().child("longitude");
+//                        DataSnapshot snap_lat = task.getResult().child("latitude");
                         for (DataSnapshot d: task.getResult().getChildren()) {
-                            Log.d("firebase MAC addr", d.getKey());
+//                            Log.d("firebase MAC addr", d.getKey());
+
                             if (d.getKey().equals(deviceHardwareAddress)) {
                                 d.getRef().removeValue();
                                 Log.d("firebase MAC addr", "Removing device " + deviceHardwareAddress + " from location " + currentKey);
@@ -494,6 +506,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     private void getAllInitLocationKeys() {
+        Log.d("MAAAAAIS", "MAAAAAIS");
         dbRef = dbRootNode.getReference("locations");
         dbRef.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
             @Override
@@ -505,6 +518,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     for (DataSnapshot d: task.getResult().getChildren()) {
                         Log.d("firebase location key", d.getKey());
                         locationKeys.add(d.getKey());
+                        Log.d("INITKEY", d.getKey());
 
                     }
                 }
@@ -522,8 +536,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 double latitude = (double) task.getResult().child("latitude").getValue();
                                 double longitude = (double) task.getResult().child("longitude").getValue();
                                 LatLng test1 = new LatLng(latitude, longitude);
-                                mMap.addMarker(new MarkerOptions().position(test1).icon(BitmapDescriptorFactory.fromResource(R.drawable.epingler)).title("Marker in Sydney"));
-                                mMap.moveCamera(CameraUpdateFactory.newLatLng(test1));
+                                mMap.addMarker(new MarkerOptions().position(test1).icon(BitmapDescriptorFactory.fromResource(R.drawable.epingler)).title("Devices found in lat " + String.valueOf(latitude) + " and longitude " + String.valueOf(longitude)));
 
                             }
                         }
