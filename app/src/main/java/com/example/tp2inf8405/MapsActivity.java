@@ -70,6 +70,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private String currentKey;
 
+
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -179,7 +180,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 LatLng test = new LatLng(latitude, longitude);
                                 currentPosMarker = mMap.addMarker(new MarkerOptions().position(test).icon(BitmapDescriptorFactory.fromResource(R.drawable.stickman)).title("CurrentPosition"));
 
-                                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(test,10));
+                                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(test,20));
 
                             }
 
@@ -204,6 +205,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                 if (mLastLocation == null || isDistantEnough(latitude, mLastLocation.getLatitude())
                             || isDistantEnough(longitude, mLastLocation.getLongitude())) {
+                        Log.d("LOCATION","new location");
                         mLastLocation = location;
                         dbRef = dbRootNode.getReference("locations").push();
                         String locationKey = dbRef.getKey();
@@ -217,14 +219,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             double prev_latitude = prev_pos.latitude;
                             double prev_longitude = prev_pos.longitude;
                             mMap.addMarker(new MarkerOptions().position(prev_pos).icon(BitmapDescriptorFactory.fromResource(R.drawable.epingler)).title("Devices found in lat " + String.valueOf(prev_latitude) + " and longitude " + String.valueOf(prev_longitude)));
-                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(test,10));
 
                             currentPosMarker.remove();
 
                         }
 
                         currentPosMarker = mMap.addMarker(new MarkerOptions().position(test).icon(BitmapDescriptorFactory.fromResource(R.drawable.stickman)).title("CurrentPosition"));
-                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(test,10));
+                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(test,20));
 
                     }
 
@@ -352,7 +353,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
                 //discovery starts, we can show progress dialog or perform other tasks
 //                Log.d("STATE", "DISCOVERY END");
-               // bluetoothAdapter.startDiscovery();
+                bluetoothAdapter.startDiscovery();
             }
             else if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 // Discovery has found a device. Get the BluetoothDevice
@@ -390,18 +391,40 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                 String deviceHardwareAddress = currentDevice.getAddress(); // MAC address
 //                Log.d("STATE",deviceName + " " + deviceAlias + " " + deviceType + " " + deviceHardwareAddress);
+                Log.d("Device detected",deviceHardwareAddress);
 
 
-                boolean needsUpdate = updateDeviceLocation(deviceHardwareAddress);
 
-                if (currentKey != null && needsUpdate == true) {
-//                    String lastLocationKey = locationKeys.get(locationKeys.size() - 1);
+                updateDeviceLocation(deviceHardwareAddress);
 
+
+                if (currentKey != null) {
                     dbRef = dbRootNode.getReference("locations/" + currentKey);
-                    // Write a message to the database
-                    dbRef.child(deviceHardwareAddress).child("name").setValue(deviceName);
-                    dbRef.child(deviceHardwareAddress).child("alias").setValue(deviceAlias);
-                    dbRef.child(deviceHardwareAddress).child("type").setValue(deviceType);
+
+                    String finalDeviceName = deviceName;
+                    String finalDeviceAlias = deviceAlias;
+                    String finalDeviceType = deviceType;
+                    dbRef.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<DataSnapshot> task) {
+                            if (!task.isSuccessful()) {
+                                Log.e("firebase", "Error getting data", task.getException());
+                            } else {
+                                //si le device n'existe pas encore dans la table
+                                if (!task.getResult().hasChild(deviceHardwareAddress))
+                                {
+                                    Log.d("NEW", "new device...");
+                                    // Write a message to the database
+                                    dbRef.child(deviceHardwareAddress).child("name").setValue(finalDeviceName);
+                                    dbRef.child(deviceHardwareAddress).child("alias").setValue(finalDeviceAlias);
+                                    dbRef.child(deviceHardwareAddress).child("type").setValue(finalDeviceType);
+                                }
+
+
+                            }
+                        }
+                    });
+
                 }
             }
         }
@@ -426,11 +449,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     // Algos pour determiner si la localization retrouvee est assez loin
     private boolean isDistantEnough(double l1, double l2) {
         double distance = Math.abs(l1 - l2);
-        if (distance >= 0.001)
+        if (distance >= 0.00005) //5e-5 vaut a peu pres 5 mètres
         {
 //            Log.d("superior", "l1 " + String.valueOf(l1) + "\n l2" + String.valueOf(l2) + "\n" + String.valueOf(distance));
         }
-        return distance >= 0.001;
+        return distance >= 0.00005;
     }
 
 
@@ -493,8 +516,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         alert.show();
     }
 
-    private boolean updateDeviceLocation(String deviceHardwareAddress) { //on retourne un boolean pour savoir si on a besoin de mettre à jour la BD
-        final boolean[] result = {true};
+    private void updateDeviceLocation(String deviceHardwareAddress) {
+
         for (int i = 0; i < locationKeys.size(); i++) {
             String loopKey = locationKeys.get(i);
             dbRef = dbRootNode.getReference("locations/" + loopKey);
@@ -513,18 +536,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             if (d.getKey().equals(deviceHardwareAddress) && loopKey != currentKey) {
                                 d.getRef().removeValue();
                                 Log.d("firebase MAC addr", "Removing device " + deviceHardwareAddress + " from location " + loopKey);
-                            }
 
-                            else if (d.getKey().equals(deviceHardwareAddress) && loopKey == currentKey)
-                            {
-                                result[0] = false;
                             }
                         }
                     }
                 }
             });
         }
-        return result[0];
     }
 
     private void isLocationInBD(Location location)
