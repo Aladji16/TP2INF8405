@@ -378,7 +378,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 //        }
 //    }
 
+    private void shareFunction() {
+        Intent send = new Intent();
+        send.setAction(Intent.ACTION_SEND);
+        send.putExtra(Intent.EXTRA_TEXT, deviceName + " " + deviceAlias +
+                " " + deviceType + " " + deviceHardwareAddress);
+        send.setType("text/plain");
 
+        Intent share = Intent.createChooser(send, null);
+        startActivity(share);
+    }
 
     @Override
     protected void onDestroy() {
