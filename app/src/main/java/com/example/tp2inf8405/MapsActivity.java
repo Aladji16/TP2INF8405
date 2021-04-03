@@ -63,8 +63,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private DatabaseReference dbRef = dbRootNode.getReference();
     private List<String> locationKeys = new ArrayList<String>();
 
+    private boolean firstLocationisInBD = false;
+
     private Marker currentPosMarker;
     private FusedLocationProviderClient mFusedLocationClient;
+
+    private String currentKey;
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     @Override
@@ -155,15 +159,23 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         if (location != null) {
                             double latitude = location.getLatitude();
                             double longitude = location.getLongitude();
-                            if (mLastLocation == null || isLatitudeDistantEnough(latitude)
-                                    || isLongitudeDistantEnough(longitude)) {
+                            if (mLastLocation == null || isDistantEnough(latitude, mLastLocation.getLatitude())
+                                    || isDistantEnough(longitude, mLastLocation.getLongitude())) {
                                 mLastLocation = location;
-                                dbRef = dbRootNode.getReference("locations").push();
-                                String locationKey = dbRef.getKey();
-                                Log.d("locationkey", locationKey);
-                                locationKeys.add(locationKey);
-                                dbRef.child("latitude").setValue(latitude);
-                                dbRef.child("longitude").setValue(longitude);
+
+//                                Log.d("LocationinBD1", String.valueOf(isLocationInBD(location)));
+                                isLocationInBD(location);
+                                if (firstLocationisInBD)
+                                {
+                                    dbRef = dbRootNode.getReference("locations").push();
+                                    String locationKey = dbRef.getKey();
+                                    Log.d("locationkey", locationKey);
+                                    currentKey = locationKey;
+                                    locationKeys.add(locationKey);
+                                    dbRef.child("latitude").setValue(latitude);
+                                    dbRef.child("longitude").setValue(longitude);
+                                }
+
                                 LatLng test = new LatLng(latitude, longitude);
                                 currentPosMarker = mMap.addMarker(new MarkerOptions().position(test).icon(BitmapDescriptorFactory.fromResource(R.drawable.stickman)).title("CurrentPosition"));
 
@@ -190,13 +202,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     double longitude = location.getLongitude();
                     LatLng test = new LatLng(latitude, longitude);
 
-                if (mLastLocation == null || isLatitudeDistantEnough(latitude)
-                            || isLongitudeDistantEnough(longitude)) {
-                    Log.d("newdist","franchement...");
+                if (mLastLocation == null || isDistantEnough(latitude, mLastLocation.getLatitude())
+                            || isDistantEnough(longitude, mLastLocation.getLongitude())) {
                         mLastLocation = location;
                         dbRef = dbRootNode.getReference("locations").push();
                         String locationKey = dbRef.getKey();
-                        Log.d("locationkey2", locationKey);
+                        currentKey = locationKey;
                         locationKeys.add(locationKey);
                         dbRef.child("latitude").setValue(latitude);
                         dbRef.child("longitude").setValue(longitude);
@@ -217,8 +228,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                     }
 
-                    String time = String.valueOf(mLastLocation.getTime());
-//                    Log.d("location", String.valueOf(latitude) + " " + String.valueOf(longitude) + " " + time);
             }
         };
 
@@ -260,9 +269,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
 
-            for (int i = 0; i < locationKeys.size() - 1; i++) {
-                String currentKey = locationKeys.get(i);
-                dbRef = dbRootNode.getReference("locations/" + currentKey);
+            for (int i = 0; i < locationKeys.size(); i++) {
+                String loopKey = locationKeys.get(i);
+                dbRef = dbRootNode.getReference("locations/" + loopKey);
                 dbRef.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<DataSnapshot> task) {
@@ -381,12 +390,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                 String deviceHardwareAddress = currentDevice.getAddress(); // MAC address
 //                Log.d("STATE",deviceName + " " + deviceAlias + " " + deviceType + " " + deviceHardwareAddress);
-                updateDeviceLocation(deviceHardwareAddress);
 
-                if (locationKeys.size() > 0) {
-                    String lastLocationKey = locationKeys.get(locationKeys.size() - 1);
 
-                    dbRef = dbRootNode.getReference("locations/" + lastLocationKey);
+                boolean needsUpdate = updateDeviceLocation(deviceHardwareAddress);
+
+                if (currentKey != null && needsUpdate == true) {
+//                    String lastLocationKey = locationKeys.get(locationKeys.size() - 1);
+
+                    dbRef = dbRootNode.getReference("locations/" + currentKey);
                     // Write a message to the database
                     dbRef.child(deviceHardwareAddress).child("name").setValue(deviceName);
                     dbRef.child(deviceHardwareAddress).child("alias").setValue(deviceAlias);
@@ -413,14 +424,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     // Algos pour determiner si la localization retrouvee est assez loin
-    private boolean isLatitudeDistantEnough(double latitude) {
-        double distance = Math.abs(latitude - mLastLocation.getLatitude());
-        return distance >= 0.001;
-    }
-
-    // Algos pour determiner si la localization retrouvee est assez loin
-    private boolean isLongitudeDistantEnough(double longitude) {
-        double distance = Math.abs(longitude - mLastLocation.getLongitude());
+    private boolean isDistantEnough(double l1, double l2) {
+        double distance = Math.abs(l1 - l2);
+        if (distance >= 0.001)
+        {
+//            Log.d("superior", "l1 " + String.valueOf(l1) + "\n l2" + String.valueOf(l2) + "\n" + String.valueOf(distance));
+        }
         return distance >= 0.001;
     }
 
@@ -484,10 +493,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         alert.show();
     }
 
-    private void updateDeviceLocation(String deviceHardwareAddress) {
-        for (int i = 0; i < locationKeys.size() - 1; i++) {
-            String currentKey = locationKeys.get(i);
-            dbRef = dbRootNode.getReference("locations/" + currentKey);
+    private boolean updateDeviceLocation(String deviceHardwareAddress) { //on retourne un boolean pour savoir si on a besoin de mettre à jour la BD
+        final boolean[] result = {true};
+        for (int i = 0; i < locationKeys.size(); i++) {
+            String loopKey = locationKeys.get(i);
+            dbRef = dbRootNode.getReference("locations/" + loopKey);
 
             dbRef.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
                 @Override
@@ -500,19 +510,63 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         for (DataSnapshot d: task.getResult().getChildren()) {
 //                            Log.d("firebase MAC addr", d.getKey());
 
-                            if (d.getKey().equals(deviceHardwareAddress)) {
+                            if (d.getKey().equals(deviceHardwareAddress) && loopKey != currentKey) {
                                 d.getRef().removeValue();
-                                Log.d("firebase MAC addr", "Removing device " + deviceHardwareAddress + " from location " + currentKey);
+                                Log.d("firebase MAC addr", "Removing device " + deviceHardwareAddress + " from location " + loopKey);
+                            }
+
+                            else if (d.getKey().equals(deviceHardwareAddress) && loopKey == currentKey)
+                            {
+                                result[0] = false;
                             }
                         }
                     }
                 }
             });
         }
+        return result[0];
+    }
+
+    private void isLocationInBD(Location location)
+    {
+        double longitude = location.getLongitude();
+        double latitude = location.getLatitude();
+
+//        final boolean[] result = {false};
+
+        for (int i = 0; i < locationKeys.size(); i++)
+        {
+            String loopKey = locationKeys.get(i);
+            dbRef = dbRootNode.getReference("locations/" + loopKey);
+
+            dbRef.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<DataSnapshot> task) {
+                    if (!task.isSuccessful()) {
+                        Log.e("firebase", "Error getting data", task.getException());
+                    } else {
+                        double loop_long = (double) task.getResult().child("longitude").getValue();
+                        double loop_lat = (double) task.getResult().child("latitude").getValue();
+//                        Log.d("LocationinBD2", String.valueOf(loop_lat) + " " + String.valueOf(latitude) + " " + String.valueOf(loop_lat - latitude)
+//                                + "\n" + String.valueOf(loop_long) + " " + String.valueOf(longitude) + " " + String.valueOf(loop_long - longitude)
+//                        + "\n " + isDistantEnough(loop_long, longitude) + " " + isDistantEnough(loop_lat, latitude));
+                        if (!isDistantEnough(loop_long, longitude) && !isDistantEnough(loop_lat, latitude))
+                        {
+                            currentKey = loopKey;
+                            firstLocationisInBD = true;
+//                            Log.d("first result", String.valueOf(result[0]));
+                        }
+                    }
+                }
+                });
+            }
+//
+//            Log.d("second result", String.valueOf(result[0]));
+//
+//            return result[0];
     }
 
     private void getAllInitLocationKeys() {
-        Log.d("MAAAAAIS", "MAAAAAIS");
         dbRef = dbRootNode.getReference("locations");
         dbRef.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
             @Override
@@ -524,14 +578,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     for (DataSnapshot d: task.getResult().getChildren()) {
                         Log.d("firebase location key", d.getKey());
                         locationKeys.add(d.getKey());
-                        Log.d("INITKEY", d.getKey());
 
                     }
                 }
 
-                for (int i = 0; i < locationKeys.size() - 1; i++) {
-                    String currentKey = locationKeys.get(i);
-                    dbRef = dbRootNode.getReference("locations/" + currentKey);
+                for (int i = 0; i < locationKeys.size(); i++) {
+                    String loopKey = locationKeys.get(i);
+                    dbRef = dbRootNode.getReference("locations/" + loopKey);
                     dbRef.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
                         @Override
                         public void onComplete(@NonNull Task<DataSnapshot> task) {
