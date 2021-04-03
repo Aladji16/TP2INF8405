@@ -192,10 +192,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                 if (mLastLocation == null || isLatitudeDistantEnough(latitude)
                             || isLongitudeDistantEnough(longitude)) {
+                    Log.d("newdist","franchement...");
                         mLastLocation = location;
                         dbRef = dbRootNode.getReference("locations").push();
                         String locationKey = dbRef.getKey();
-                        Log.d("locationkey", locationKey);
+                        Log.d("locationkey2", locationKey);
                         locationKeys.add(locationKey);
                         dbRef.child("latitude").setValue(latitude);
                         dbRef.child("longitude").setValue(longitude);
@@ -205,6 +206,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             double prev_latitude = prev_pos.latitude;
                             double prev_longitude = prev_pos.longitude;
                             mMap.addMarker(new MarkerOptions().position(prev_pos).icon(BitmapDescriptorFactory.fromResource(R.drawable.epingler)).title("Devices found in lat " + String.valueOf(prev_latitude) + " and longitude " + String.valueOf(prev_longitude)));
+                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(test,10));
 
                             currentPosMarker.remove();
 
