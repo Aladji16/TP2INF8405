@@ -92,7 +92,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         getAllInitLocationKeys();
 
         super.onCreate(savedInstanceState);
-//        setContentView(R.layout.activity_maps);
         setContentView(R.layout.test);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         Button btn = findViewById(R.id.btn);
@@ -115,8 +114,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 }
             }
         });
-
-
 
         if (!bluetoothAdapter.isEnabled()) {
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
@@ -202,7 +199,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             }
 
                             String time = String.valueOf(mLastLocation.getTime());
-//                            Log.d("location", String.valueOf(latitude) + " " + String.valueOf(longitude) + " " + time);
 
                         } else {
                             Log.d("location", "no location found");
@@ -253,7 +249,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
         filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
 
-//        filter.addAction(BluetoothDevice.ACTION_FOUND);
         registerReceiver(receiver, filter);
         bluetoothAdapter.startDiscovery();
         mFusedLocationClient.getLastLocation();
@@ -423,34 +418,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     // Algos pour determiner si la localization retrouvee est assez loin
     private boolean isDistantEnough(double l1, double l2) {
         double distance = Math.abs(l1 - l2);
-        if (distance >= 0.00005) //5e-5 vaut a peu pres 5 mètres
-        {
-//            Log.d("superior", "l1 " + String.valueOf(l1) + "\n l2" + String.valueOf(l2) + "\n" + String.valueOf(distance));
-        }
-        return distance >= 0.00005;
+        return distance >= 0.00005; //5e-5 vaut a peu pres 5 mètres
     }
 
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
-
         // Don't forget to unregister the ACTION_FOUND receiver.
         unregisterReceiver(receiver);
     }
 
 
 
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
@@ -502,10 +482,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     if (!task.isSuccessful()) {
                         Log.e("firebase", "Error getting data", task.getException());
                     } else {
-//                        DataSnapshot snap_long = task.getResult().child("longitude");
-//                        DataSnapshot snap_lat = task.getResult().child("latitude");
                         for (DataSnapshot d: task.getResult().getChildren()) {
-//                            Log.d("firebase MAC addr", d.getKey());
 
                             if (d.getKey().equals(deviceHardwareAddress) && loopKey != currentKey) {
                                 d.getRef().removeValue();
@@ -524,7 +501,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         double longitude = location.getLongitude();
         double latitude = location.getLatitude();
 
-//        final boolean[] result = {false};
 
         for (int i = 0; i < locationKeys.size(); i++)
         {
@@ -539,23 +515,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     } else {
                         double loop_long = (double) task.getResult().child("longitude").getValue();
                         double loop_lat = (double) task.getResult().child("latitude").getValue();
-//                        Log.d("LocationinBD2", String.valueOf(loop_lat) + " " + String.valueOf(latitude) + " " + String.valueOf(loop_lat - latitude)
-//                                + "\n" + String.valueOf(loop_long) + " " + String.valueOf(longitude) + " " + String.valueOf(loop_long - longitude)
-//                        + "\n " + isDistantEnough(loop_long, longitude) + " " + isDistantEnough(loop_lat, latitude));
                         if (!isDistantEnough(loop_long, longitude) && !isDistantEnough(loop_lat, latitude))
                         {
                             currentKey = loopKey;
                             firstLocationisInBD = true;
-//                            Log.d("first result", String.valueOf(result[0]));
                         }
                     }
                 }
             });
         }
-//
-//            Log.d("second result", String.valueOf(result[0]));
-//
-//            return result[0];
     }
 
     private void getAllInitLocationKeys() {
