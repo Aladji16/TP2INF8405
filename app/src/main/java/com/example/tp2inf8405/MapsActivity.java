@@ -3,6 +3,7 @@ package com.example.tp2inf8405;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
@@ -16,14 +17,17 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
 import android.util.Log;
-import android.widget.TextView;
+import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -71,6 +75,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private String currentKey;
 
+    boolean isDarkMode = false;
+
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,11 +92,29 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         getAllInitLocationKeys();
 
         super.onCreate(savedInstanceState);
+//        setContentView(R.layout.activity_maps);
+        setContentView(R.layout.test);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        Button btn = findViewById(R.id.btn);
+        ConstraintLayout container = (ConstraintLayout) findViewById(R.id.mainView);
 
-
-        TextView textview = (TextView) findViewById(R.id.textView);
-
-
+        btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(!isDarkMode) {
+                    container.setBackgroundResource(R.color.black);
+                    btn.setBackgroundColor(Color.rgb(77, 0, 153));
+                    btn.setTextColor(Color.WHITE);
+                    isDarkMode = true;
+                }
+                else if(isDarkMode) {
+                    container.setBackgroundResource(R.color.white);
+                    btn.setBackgroundColor(Color.rgb(204, 153, 255));
+                    btn.setTextColor(Color.BLACK);
+                    isDarkMode = false;
+                }
+            }
+        });
 
 
 //        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -148,6 +172,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         statusCheck();
 
 
+
+        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.mapView);
+        mapFragment.getMapAsync(this::onMapReady);
+
+
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         mFusedLocationClient.getLastLocation().addOnSuccessListener(
                 new OnSuccessListener<Location>() {
@@ -176,7 +207,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 LatLng test = new LatLng(latitude, longitude);
                                 currentPosMarker = mMap.addMarker(new MarkerOptions().position(test).icon(BitmapDescriptorFactory.fromResource(R.drawable.stickman)).title("CurrentPosition"));
 
-                                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(test,10));
+                                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(test,20));
 
                             }
 
@@ -191,51 +222,39 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
 
-        mFusedLocationClient.getLastLocation();
-
-        setContentView(R.layout.activity_maps);
-
-
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.mapView);
-        mapFragment.getMapAsync(this);
-
-
-
         locationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult locationResult) {
-                    Location location = locationResult.getLastLocation();
-                    double latitude = location.getLatitude();
-                    double longitude = location.getLongitude();
-                    LatLng test = new LatLng(latitude, longitude);
+                Location location = locationResult.getLastLocation();
+                double latitude = location.getLatitude();
+                double longitude = location.getLongitude();
+                LatLng test = new LatLng(latitude, longitude);
 
                 if (mLastLocation == null || isDistantEnough(latitude, mLastLocation.getLatitude())
-                            || isDistantEnough(longitude, mLastLocation.getLongitude())) {
-                        mLastLocation = location;
-                        dbRef = dbRootNode.getReference("locations").push();
-                        String locationKey = dbRef.getKey();
-                        currentKey = locationKey;
-                        locationKeys.add(locationKey);
-                        dbRef.child("latitude").setValue(latitude);
-                        dbRef.child("longitude").setValue(longitude);
-                        if (currentPosMarker != null) {
-                            //ajouter l'épingle avec les différents device trouvés
-                            LatLng prev_pos = currentPosMarker.getPosition();
-                            double prev_latitude = prev_pos.latitude;
-                            double prev_longitude = prev_pos.longitude;
-                            mMap.addMarker(new MarkerOptions().position(prev_pos).icon(BitmapDescriptorFactory.fromResource(R.drawable.epingler)).title("Devices found in lat " + String.valueOf(prev_latitude) + " and longitude " + String.valueOf(prev_longitude)));
-                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(test,10));
+                        || isDistantEnough(longitude, mLastLocation.getLongitude())) {
+                    Log.d("LOCATION","new location");
+                    mLastLocation = location;
+                    dbRef = dbRootNode.getReference("locations").push();
+                    String locationKey = dbRef.getKey();
+                    currentKey = locationKey;
+                    locationKeys.add(locationKey);
+                    dbRef.child("latitude").setValue(latitude);
+                    dbRef.child("longitude").setValue(longitude);
+                    if (currentPosMarker != null) {
+                        //ajouter l'épingle avec les différents device trouvés
+                        LatLng prev_pos = currentPosMarker.getPosition();
+                        double prev_latitude = prev_pos.latitude;
+                        double prev_longitude = prev_pos.longitude;
+                        mMap.addMarker(new MarkerOptions().position(prev_pos).icon(BitmapDescriptorFactory.fromResource(R.drawable.epingler)).title("Devices found in lat " + String.valueOf(prev_latitude) + " and longitude " + String.valueOf(prev_longitude)));
 
-                            currentPosMarker.remove();
-
-                        }
-
-                        currentPosMarker = mMap.addMarker(new MarkerOptions().position(test).icon(BitmapDescriptorFactory.fromResource(R.drawable.stickman)).title("CurrentPosition"));
-                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(test,10));
+                        currentPosMarker.remove();
 
                     }
+
+                    currentPosMarker = mMap.addMarker(new MarkerOptions().position(test).icon(BitmapDescriptorFactory.fromResource(R.drawable.stickman)).title("CurrentPosition"));
+                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(test,20));
+
+                }
 
             }
         };
@@ -243,7 +262,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
 
-        startLocationUpdates();
 
 
         IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
@@ -254,6 +272,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 //        filter.addAction(BluetoothDevice.ACTION_FOUND);
         registerReceiver(receiver, filter);
         bluetoothAdapter.startDiscovery();
+        mFusedLocationClient.getLastLocation();
 
 
 
@@ -288,34 +307,34 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             Log.e("firebase", "Error getting data", task.getException());
                         }
                         else {
-                                DataSnapshot snap_long = task.getResult().child("longitude");
-                                DataSnapshot snap_lat = task.getResult().child("latitude");
-                                double long_loop = (double) snap_long.getValue();
-                                double lat_loop = (double) snap_lat.getValue();
+                            DataSnapshot snap_long = task.getResult().child("longitude");
+                            DataSnapshot snap_lat = task.getResult().child("latitude");
+                            double long_loop = (double) snap_long.getValue();
+                            double lat_loop = (double) snap_lat.getValue();
 
                             String mac_addr = "", name = "", alias = "", type = "";
 
-                                for (DataSnapshot d: task.getResult().getChildren()) {
-                                    if (! d.getKey().equals("latitude") && ! d.getKey().equals("longitude"))
-                                    {
-                                        mac_addr = String.valueOf(d.getKey());
-                                        name = String.valueOf(d.child("name").getValue());
-                                        alias = String.valueOf(d.child("alias").getValue());
-                                        type = String.valueOf(d.child("type").getValue());
+                            for (DataSnapshot d: task.getResult().getChildren()) {
+                                if (! d.getKey().equals("latitude") && ! d.getKey().equals("longitude"))
+                                {
+                                    mac_addr = String.valueOf(d.getKey());
+                                    name = String.valueOf(d.child("name").getValue());
+                                    alias = String.valueOf(d.child("alias").getValue());
+                                    type = String.valueOf(d.child("type").getValue());
 //                                        if (long_loop == clicked_longitude && lat_loop == clicked_latitude)
 //                                        {
-                                            Log.d("EVENTTEST","name " + name + "\n macaddr " + mac_addr + "\n  type " + type +
-                                                    "\n  alias " + alias);
-                                            Log.d("EVENTPOS1", String.valueOf(snap_long.getValue()) + " " + String.valueOf(snap_lat.getValue()));
-                                            Log.d("EVENTPOS2", String.valueOf(clicked_longitude) + " " + String.valueOf(clicked_latitude));
+                                    Log.d("EVENTTEST","name " + name + "\n macaddr " + mac_addr + "\n  type " + type +
+                                            "\n  alias " + alias);
+                                    Log.d("EVENTPOS1", String.valueOf(snap_long.getValue()) + " " + String.valueOf(snap_lat.getValue()));
+                                    Log.d("EVENTPOS2", String.valueOf(clicked_longitude) + " " + String.valueOf(clicked_latitude));
 
 //                                        }
 
 
-                                    }
-
-
                                 }
+
+
+                            }
                         }
                     }
 
@@ -361,7 +380,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
                 //discovery starts, we can show progress dialog or perform other tasks
 //                Log.d("STATE", "DISCOVERY END");
-               // bluetoothAdapter.startDiscovery();
+                bluetoothAdapter.startDiscovery();
             }
             else if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 // Discovery has found a device. Get the BluetoothDevice
@@ -399,18 +418,40 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                 String deviceHardwareAddress = currentDevice.getAddress(); // MAC address
 //                Log.d("STATE",deviceName + " " + deviceAlias + " " + deviceType + " " + deviceHardwareAddress);
+                Log.d("Device detected",deviceHardwareAddress);
 
 
-                boolean needsUpdate = updateDeviceLocation(deviceHardwareAddress);
 
-                if (currentKey != null && needsUpdate == true) {
-//                    String lastLocationKey = locationKeys.get(locationKeys.size() - 1);
+                updateDeviceLocation(deviceHardwareAddress);
 
+
+                if (currentKey != null) {
                     dbRef = dbRootNode.getReference("locations/" + currentKey);
-                    // Write a message to the database
-                    dbRef.child(deviceHardwareAddress).child("name").setValue(deviceName);
-                    dbRef.child(deviceHardwareAddress).child("alias").setValue(deviceAlias);
-                    dbRef.child(deviceHardwareAddress).child("type").setValue(deviceType);
+
+                    String finalDeviceName = deviceName;
+                    String finalDeviceAlias = deviceAlias;
+                    String finalDeviceType = deviceType;
+                    dbRef.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<DataSnapshot> task) {
+                            if (!task.isSuccessful()) {
+                                Log.e("firebase", "Error getting data", task.getException());
+                            } else {
+                                //si le device n'existe pas encore dans la table
+                                if (!task.getResult().hasChild(deviceHardwareAddress))
+                                {
+                                    Log.d("NEW", "new device...");
+                                    // Write a message to the database
+                                    dbRef.child(deviceHardwareAddress).child("name").setValue(finalDeviceName);
+                                    dbRef.child(deviceHardwareAddress).child("alias").setValue(finalDeviceAlias);
+                                    dbRef.child(deviceHardwareAddress).child("type").setValue(finalDeviceType);
+                                }
+
+
+                            }
+                        }
+                    });
+
                 }
             }
         }
@@ -435,11 +476,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     // Algos pour determiner si la localization retrouvee est assez loin
     private boolean isDistantEnough(double l1, double l2) {
         double distance = Math.abs(l1 - l2);
-        if (distance >= 0.001)
+        if (distance >= 0.00005) //5e-5 vaut a peu pres 5 mètres
         {
 //            Log.d("superior", "l1 " + String.valueOf(l1) + "\n l2" + String.valueOf(l2) + "\n" + String.valueOf(distance));
         }
-        return distance >= 0.001;
+        return distance >= 0.00005;
     }
 
 
@@ -475,7 +516,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
 
-    public void statusCheck() { //https://stackoverflow.com/questions/25175522/how-to-enable-location-access-programmatically-in-android
+    public void statusCheck() {
         final LocationManager manager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
         if (!manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
@@ -502,8 +543,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         alert.show();
     }
 
-    private boolean updateDeviceLocation(String deviceHardwareAddress) { //on retourne un boolean pour savoir si on a besoin de mettre à jour la BD
-        final boolean[] result = {true};
+    private void updateDeviceLocation(String deviceHardwareAddress) {
+
         for (int i = 0; i < locationKeys.size(); i++) {
             String loopKey = locationKeys.get(i);
             dbRef = dbRootNode.getReference("locations/" + loopKey);
@@ -522,18 +563,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             if (d.getKey().equals(deviceHardwareAddress) && loopKey != currentKey) {
                                 d.getRef().removeValue();
                                 Log.d("firebase MAC addr", "Removing device " + deviceHardwareAddress + " from location " + loopKey);
-                            }
 
-                            else if (d.getKey().equals(deviceHardwareAddress) && loopKey == currentKey)
-                            {
-                                result[0] = false;
                             }
                         }
                     }
                 }
             });
         }
-        return result[0];
     }
 
     private void isLocationInBD(Location location)
@@ -567,8 +603,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         }
                     }
                 }
-                });
-            }
+            });
+        }
 //
 //            Log.d("second result", String.valueOf(result[0]));
 //
