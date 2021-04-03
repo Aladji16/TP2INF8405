@@ -117,7 +117,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
 
 
-//        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
         if (!bluetoothAdapter.isEnabled()) {
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
@@ -153,10 +152,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         dbRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                // This method is called once with the initial value and again
-                // whenever data at this location is updated.
-//                String value = dataSnapshot.getValue(String.class);
-//                Log.d("TAG", "onDataChanged!");
             }
 
             @Override
@@ -166,11 +161,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
 
-
-
-
         statusCheck();
-
 
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -191,7 +182,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                     || isDistantEnough(longitude, mLastLocation.getLongitude())) {
                                 mLastLocation = location;
 
-//                                Log.d("LocationinBD1", String.valueOf(isLocationInBD(location)));
                                 isLocationInBD(location);
                                 if (firstLocationisInBD)
                                 {
@@ -258,12 +248,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             }
         };
-
-
-
-
-
-
         IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
         filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
         filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
@@ -274,8 +258,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         bluetoothAdapter.startDiscovery();
         mFusedLocationClient.getLastLocation();
 
-
-
         locationRequest = LocationRequest.create();
         locationRequest.setInterval(10000);
         locationRequest.setFastestInterval(5000);
@@ -284,8 +266,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         startLocationUpdates();
 
     }
-
-
 
 
     private GoogleMap.OnMarkerClickListener eventMarkerClickListener = new GoogleMap.OnMarkerClickListener() {
@@ -321,14 +301,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                     name = String.valueOf(d.child("name").getValue());
                                     alias = String.valueOf(d.child("alias").getValue());
                                     type = String.valueOf(d.child("type").getValue());
-//                                        if (long_loop == clicked_longitude && lat_loop == clicked_latitude)
-//                                        {
-                                    Log.d("EVENTTEST","name " + name + "\n macaddr " + mac_addr + "\n  type " + type +
-                                            "\n  alias " + alias);
-                                    Log.d("EVENTPOS1", String.valueOf(snap_long.getValue()) + " " + String.valueOf(snap_lat.getValue()));
-                                    Log.d("EVENTPOS2", String.valueOf(clicked_longitude) + " " + String.valueOf(clicked_latitude));
-
-//                                        }
 
 
                                 }
@@ -340,8 +312,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                 });
             }
-
-
             return false;
         }
     };
@@ -350,43 +320,24 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
-//            Log.d("ACTION",action);
 
             if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)) {
                 //state change of bluetooth
                 int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, -1);
                 switch (state) {
-                    case BluetoothAdapter.STATE_TURNING_OFF:
-//                        Log.d("blutoh state", "turnin off");
-                        break;
                     case BluetoothAdapter.STATE_OFF:
 //                        Log.d("blutoh state", "off");
                         //surement besoin d'un message/toast "vous avez besoin de bluetooth pour..."
                         break;
-                    case BluetoothAdapter.STATE_TURNING_ON:
-//                        Log.d("blutoh state", "turnin on");
-                        break;
                     case BluetoothAdapter.STATE_ON:
-                        Log.d("blutoh state", "on");
                         bluetoothAdapter.startDiscovery();
                         break;
                 }
             }
-
-            else if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)) {
-                //discovery starts, we can show progress dialog or perform other tasks
-//                Log.d("STATE", "DISCOVERY BEGIN");
-            }
             else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
-                //discovery starts, we can show progress dialog or perform other tasks
-//                Log.d("STATE", "DISCOVERY END");
                 bluetoothAdapter.startDiscovery();
             }
             else if (BluetoothDevice.ACTION_FOUND.equals(action)) {
-                // Discovery has found a device. Get the BluetoothDevice
-                // object and its info from the Intent.
-//                Log.d("STATE","DEVICE FOUND");
-
                 currentDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 String deviceName = currentDevice.getName();
                 if (deviceName == null) {
@@ -417,13 +368,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
                 String deviceHardwareAddress = currentDevice.getAddress(); // MAC address
-//                Log.d("STATE",deviceName + " " + deviceAlias + " " + deviceType + " " + deviceHardwareAddress);
                 Log.d("Device detected",deviceHardwareAddress);
 
-
-
                 updateDeviceLocation(deviceHardwareAddress);
-
 
                 if (currentKey != null) {
                     dbRef = dbRootNode.getReference("locations/" + currentKey);
