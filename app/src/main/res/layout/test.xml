@@ -22,13 +22,14 @@
 
     <TextView
         android:id="@+id/textView"
+        android:scrollbars = "vertical"
         android:layout_width="183dp"
         android:layout_height="320dp"
         android:layout_marginStart="72dp"
         android:layout_marginLeft="72dp"
         android:layout_marginEnd="60dp"
         android:layout_marginRight="60dp"
-        android:text=""
+        android:text="searching..."
         app:layout_constraintBottom_toTopOf="@+id/btn"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.56"
