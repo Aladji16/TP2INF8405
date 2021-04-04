@@ -28,6 +28,7 @@ import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -330,6 +331,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 }
             }
             else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
+                getList();
                 bluetoothAdapter.startDiscovery();
             }
             else if (BluetoothDevice.ACTION_FOUND.equals(action)) {
@@ -468,6 +470,44 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 });
         final AlertDialog alert = builder.create();
         alert.show();
+    }
+
+    private void getList() {
+
+        TextView liste = findViewById(R.id.textView);
+
+        for (int i = 0; i < locationKeys.size(); i++) {
+            String loopKey = locationKeys.get(i);
+            dbRef = dbRootNode.getReference("locations/" + loopKey);
+            dbRef.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<DataSnapshot> task) {
+
+                    String textString= "";
+
+                    if (!task.isSuccessful()) {
+                        Log.e("firebase", "Error getting data", task.getException());
+                    } else {
+                        for (DataSnapshot d : task.getResult().getChildren()) {
+
+                            String mac_addr = "", name = "", alias = "", type = "";
+
+                            if (!d.getKey().equals("latitude") && !d.getKey().equals("longitude")) {
+                                mac_addr = String.valueOf(d.getKey());
+                                name = String.valueOf(d.child("name").getValue());
+                                alias = String.valueOf(d.child("alias").getValue());
+                                type = String.valueOf(d.child("type").getValue());
+                            }
+
+                            textString += name + "\n" + mac_addr + "\n" + "---------------" + "\n";
+
+                        }
+
+                        liste.setText(textString);
+                    }
+                }
+            });
+        }
     }
 
     private void updateDeviceLocation(String deviceHardwareAddress) {
