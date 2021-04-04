@@ -23,6 +23,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
 import android.util.Log;
+import android.net.Uri;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -173,10 +174,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         setContentView(R.layout.activity_maps);
 
 
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.mapView);
-        mapFragment.getMapAsync(this);
 
 
 
@@ -479,4 +476,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
     }
+}
+
+//Routing
+public void getDirection(double latitude, double longitude) {
+    //https://developer.android.com/reference/android/net/Uri
+    Uri route = Uri.parse("google.navigation:q=" + latitude + "," + longitude);
+    Intent mapIntent = new Intent(Intent.ACTION_VIEW, route);
+    mapIntent.setPackage("com.google.android.apps.maps");
+    startActivity(mapIntent);
 }
