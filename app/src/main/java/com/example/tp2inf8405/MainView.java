@@ -16,6 +16,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.content.ContextCompat;
 
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
@@ -32,10 +33,6 @@ public class MainView extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.test);
-
-        TextView liste = findViewById(R.id.textView);
-        liste.setMovementMethod(new ScrollingMovementMethod());
-
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
         Button btn = findViewById(R.id.btn);
@@ -48,14 +45,12 @@ public class MainView extends AppCompatActivity {
                     container.setBackgroundResource(R.color.black);
                     btn.setBackgroundColor(Color.rgb(77, 0, 153));
                     btn.setTextColor(Color.WHITE);
-                    liste.setTextColor(Color.WHITE);
                     isDarkMode = true;
                 }
                  else if(isDarkMode) {
                     container.setBackgroundResource(R.color.white);
                     btn.setBackgroundColor(Color.rgb(204, 153, 255));
                     btn.setTextColor(Color.BLACK);
-                    liste.setTextColor(Color.BLACK);
                     isDarkMode = false;
                 }
             }

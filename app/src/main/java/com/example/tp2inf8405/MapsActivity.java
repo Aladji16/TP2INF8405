@@ -476,6 +476,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         TextView liste = findViewById(R.id.textView);
 
+        liste.setText("searching... please wait");
+
         for (int i = 0; i < locationKeys.size(); i++) {
             String loopKey = locationKeys.get(i);
             dbRef = dbRootNode.getReference("locations/" + loopKey);
@@ -483,7 +485,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 @Override
                 public void onComplete(@NonNull Task<DataSnapshot> task) {
 
-                    String textString= "";
+                    String list = "";
 
                     if (!task.isSuccessful()) {
                         Log.e("firebase", "Error getting data", task.getException());
@@ -499,11 +501,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 type = String.valueOf(d.child("type").getValue());
                             }
 
-                            textString += name + "\n" + mac_addr + "\n" + "---------------" + "\n";
-
+                            liste.setText(liste.getText() + name + "\n" + mac_addr + "\n" + "-------------------------" + "\n");
                         }
 
-                        liste.setText(textString);
                     }
                 }
             });
