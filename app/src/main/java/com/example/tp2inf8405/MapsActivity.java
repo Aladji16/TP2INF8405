@@ -69,6 +69,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private DatabaseReference dbRef = dbRootNode.getReference();
     private List<String> locationKeys = new ArrayList<String>();
 
+    class Device {
+        public String mac_addr;
+        public String name;
+        public String alias;
+        public String type;
+    }
+
+    private List<Device> nearbyDevices = new ArrayList<Device>();
+
     private boolean firstLocationisInBD = false;
 
     private Marker currentPosMarker;
@@ -180,6 +189,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                     || isDistantEnough(longitude, mLastLocation.getLongitude())) {
                                 mLastLocation = location;
 
+                                // RESET EVERTYHING
+                                nearbyDevices = new ArrayList<Device>();
+                                TextView liste = findViewById(R.id.textView);
+                                liste.setText("");
+
+
                                 isLocationInBD(location);
                                 if (firstLocationisInBD)
                                 {
@@ -219,6 +234,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                 if (mLastLocation == null || isDistantEnough(latitude, mLastLocation.getLatitude())
                         || isDistantEnough(longitude, mLastLocation.getLongitude())) {
+
+                    // RESET EVERYTHING
+                    nearbyDevices = new ArrayList<Device>();
+                    TextView liste = findViewById(R.id.textView);
+                    liste.setText("");
+
+
                     Log.d("LOCATION","new location");
                     mLastLocation = location;
                     dbRef = dbRootNode.getReference("locations").push();
@@ -331,8 +353,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 }
             }
             else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
-                getList();
                 bluetoothAdapter.startDiscovery();
+
             }
             else if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 currentDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
@@ -395,7 +417,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             }
                         }
                     });
-
+                    addNearbyDevice(deviceHardwareAddress, finalDeviceName, finalDeviceAlias, finalDeviceType);
                 }
             }
         }
@@ -471,12 +493,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         final AlertDialog alert = builder.create();
         alert.show();
     }
-
+/*
     private void getList() {
 
         TextView liste = findViewById(R.id.textView);
 
-        liste.setText("searching... please wait");
+        liste.setText("");
 
         for (int i = 0; i < locationKeys.size(); i++) {
             String loopKey = locationKeys.get(i);
@@ -507,6 +529,29 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     }
                 }
             });
+        }
+    }
+
+    */
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    private void addNearbyDevice(String macAddr, String name, String alias, String type) {
+
+        TextView liste = findViewById(R.id.textView);
+
+        Device discoveredDevice = new Device();
+        discoveredDevice.mac_addr = macAddr;
+        discoveredDevice.name = name;
+        discoveredDevice.alias = alias;
+        discoveredDevice.type = type;
+
+
+        boolean contains  = nearbyDevices.stream().filter(device -> device.mac_addr.equals(macAddr)).findFirst().orElse(null) != null;
+        Log.d("Nearby Device", String.valueOf(contains));
+
+        if (nearbyDevices.isEmpty() || !contains) {
+            nearbyDevices.add(discoveredDevice);
+            liste.setText(liste.getText() + discoveredDevice.mac_addr + "\n" + discoveredDevice.name + "\n" + "-------------------------" + "\n");
+
         }
     }
 

@@ -21,22 +21,23 @@
 
     <ScrollView
         android:id="@+id/SCROLLER_ID"
-        android:layout_width="196dp"
-        android:layout_height="377dp"
+        android:layout_width="197dp"
+        android:layout_height="353dp"
         android:fillViewport="true"
         android:scrollbars="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toEndOf="@+id/mapView"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0">
 
         <TextView
             android:id="@+id/textView"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
             android:layout_weight="1.0"
-            android:text="searching... please wait"
-            />
+            android:text="" />
     </ScrollView>
 
     <Button
