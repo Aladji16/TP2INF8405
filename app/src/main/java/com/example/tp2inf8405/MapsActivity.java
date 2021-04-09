@@ -185,14 +185,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         if (location != null) {
                             double latitude = location.getLatitude();
                             double longitude = location.getLongitude();
+
                             if (mLastLocation == null || isDistantEnough(latitude, mLastLocation.getLatitude())
                                     || isDistantEnough(longitude, mLastLocation.getLongitude())) {
+
+                                Log.d("nearby device", "onSuccess 1st location");
+
                                 mLastLocation = location;
 
                                 // RESET EVERTYHING
                                 nearbyDevices = new ArrayList<Device>();
                                 TextView liste = findViewById(R.id.textView);
                                 liste.setText("");
+
 
 
                                 isLocationInBD(location);
@@ -231,6 +236,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 double latitude = location.getLatitude();
                 double longitude = location.getLongitude();
                 LatLng test = new LatLng(latitude, longitude);
+
 
                 if (mLastLocation == null || isDistantEnough(latitude, mLastLocation.getLatitude())
                         || isDistantEnough(longitude, mLastLocation.getLongitude())) {
@@ -550,7 +556,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         if (nearbyDevices.isEmpty() || !contains) {
             nearbyDevices.add(discoveredDevice);
-            liste.setText(liste.getText() + discoveredDevice.mac_addr + "\n" + discoveredDevice.name + "\n" + "-------------------------" + "\n");
+            liste.setText(liste.getText() + discoveredDevice.name + "\n" + discoveredDevice.mac_addr + "\n" + "-------------------------" + "\n");
 
         }
     }
