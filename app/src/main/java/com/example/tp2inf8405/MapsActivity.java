@@ -201,7 +201,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
                                 isLocationInBD(location);
-                                if (firstLocationisInBD)
+                                if (!firstLocationisInBD)
                                 {
                                     dbRef = dbRootNode.getReference("locations").push();
                                     String locationKey = dbRef.getKey();
@@ -240,6 +240,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                 if (mLastLocation == null || isDistantEnough(latitude, mLastLocation.getLatitude())
                         || isDistantEnough(longitude, mLastLocation.getLongitude())) {
+
+                    Log.d("nearby device", "onSuccess location callback");
+
 
                     // RESET EVERYTHING
                     nearbyDevices = new ArrayList<Device>();
@@ -363,6 +366,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             }
             else if (BluetoothDevice.ACTION_FOUND.equals(action)) {
+
+                Log.d("nearby device", "action found");
+
                 currentDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 String deviceName = currentDevice.getName();
                 if (deviceName == null) {
@@ -448,7 +454,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     // Algos pour determiner si la localization retrouvee est assez loin
     private boolean isDistantEnough(double l1, double l2) {
         double distance = Math.abs(l1 - l2);
-        return distance >= 0.00005; //5e-5 vaut a peu pres 5 mètres
+        return distance >= 0.0005; //5e-5 vaut a peu pres 5 mètres
     }
 
 
@@ -552,7 +558,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
         boolean contains  = nearbyDevices.stream().filter(device -> device.mac_addr.equals(macAddr)).findFirst().orElse(null) != null;
-        Log.d("Nearby Device", String.valueOf(contains));
 
         if (nearbyDevices.isEmpty() || !contains) {
             nearbyDevices.add(discoveredDevice);
