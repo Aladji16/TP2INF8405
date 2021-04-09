@@ -9,6 +9,7 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothAdapter;
@@ -344,6 +345,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     };
 
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
+        @SuppressLint("NewApi")
         @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
@@ -454,7 +456,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     // Algos pour determiner si la localization retrouvee est assez loin
     private boolean isDistantEnough(double l1, double l2) {
         double distance = Math.abs(l1 - l2);
-        return distance >= 0.0005; //5e-5 vaut a peu pres 5 mètres
+        return distance >= 0.1; //5e-5 vaut a peu pres 5 mètres
     }
 
 
@@ -505,46 +507,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         final AlertDialog alert = builder.create();
         alert.show();
     }
-/*
-    private void getList() {
-
-        TextView liste = findViewById(R.id.textView);
-
-        liste.setText("");
-
-        for (int i = 0; i < locationKeys.size(); i++) {
-            String loopKey = locationKeys.get(i);
-            dbRef = dbRootNode.getReference("locations/" + loopKey);
-            dbRef.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
-                @Override
-                public void onComplete(@NonNull Task<DataSnapshot> task) {
-
-                    String list = "";
-
-                    if (!task.isSuccessful()) {
-                        Log.e("firebase", "Error getting data", task.getException());
-                    } else {
-                        for (DataSnapshot d : task.getResult().getChildren()) {
-
-                            String mac_addr = "", name = "", alias = "", type = "";
-
-                            if (!d.getKey().equals("latitude") && !d.getKey().equals("longitude")) {
-                                mac_addr = String.valueOf(d.getKey());
-                                name = String.valueOf(d.child("name").getValue());
-                                alias = String.valueOf(d.child("alias").getValue());
-                                type = String.valueOf(d.child("type").getValue());
-                            }
-
-                            liste.setText(liste.getText() + name + "\n" + mac_addr + "\n" + "-------------------------" + "\n");
-                        }
-
-                    }
-                }
-            });
-        }
-    }
-
-    */
+    
     @RequiresApi(api = Build.VERSION_CODES.N)
     private void addNearbyDevice(String macAddr, String name, String alias, String type) {
 
