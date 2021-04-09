@@ -457,7 +457,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     // Algos pour determiner si la localization retrouvee est assez loin
     private boolean isDistantEnough(double l1, double l2) {
         double distance = Math.abs(l1 - l2);
-        return distance >= 0.1; //5e-5 vaut a peu pres 5 mètres
+        return distance >= 0.0005; //5e-5 vaut a peu pres 5 mètres
     }
 
 
