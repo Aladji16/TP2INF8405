@@ -57,6 +57,7 @@ import com.google.firebase.database.ValueEventListener;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -181,6 +182,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         mFusedLocationClient.getLastLocation().addOnSuccessListener(
                 new OnSuccessListener<Location>() {
+                    @RequiresApi(api = Build.VERSION_CODES.N)
                     @Override
                     public void onSuccess(Location location) {
                         if (location != null) {
@@ -200,18 +202,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 liste.setText("");
 
 
-
-                                isLocationInBD(location);
-                                if (!firstLocationisInBD)
-                                {
-                                    dbRef = dbRootNode.getReference("locations").push();
-                                    String locationKey = dbRef.getKey();
-                                    Log.d("locationkey", locationKey);
-                                    currentKey = locationKey;
-                                    locationKeys.add(locationKey);
-                                    dbRef.child("latitude").setValue(latitude);
-                                    dbRef.child("longitude").setValue(longitude);
-                                }
+                                handleFirstLocation(location);
+//                                if (!firstLocationisInBD)
+//                                {
+//                                    dbRef = dbRootNode.getReference("locations").push();
+//                                    String locationKey = dbRef.getKey();
+//                                    Log.d("locationkey", locationKey);
+//                                    currentKey = locationKey;
+//                                    locationKeys.add(locationKey);
+//                                    dbRef.child("latitude").setValue(latitude);
+//                                    dbRef.child("longitude").setValue(longitude);
+//                                }
 
                                 LatLng test = new LatLng(latitude, longitude);
                                 currentPosMarker = mMap.addMarker(new MarkerOptions().position(test).icon(BitmapDescriptorFactory.fromResource(R.drawable.stickman)).title("CurrentPosition"));
@@ -283,7 +284,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
 
         registerReceiver(receiver, filter);
-        bluetoothAdapter.startDiscovery();
+//        bluetoothAdapter.startDiscovery();
         mFusedLocationClient.getLastLocation();
 
         locationRequest = LocationRequest.create();
@@ -405,7 +406,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                 updateDeviceLocation(deviceHardwareAddress);
 
-                if (currentKey != null) {
+//                if (currentKey != null) {
                     dbRef = dbRootNode.getReference("locations/" + currentKey);
 
                     String finalDeviceName = deviceName;
@@ -432,7 +433,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         }
                     });
                     addNearbyDevice(deviceHardwareAddress, finalDeviceName, finalDeviceAlias, finalDeviceType);
-                }
+//                }
             }
         }
     };
@@ -555,34 +556,83 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
-    private void isLocationInBD(Location location)
+    private int handleFirstLocation(Location location)
     {
         double longitude = location.getLongitude();
         double latitude = location.getLatitude();
-
-
-        for (int i = 0; i < locationKeys.size(); i++)
-        {
-            String loopKey = locationKeys.get(i);
-            dbRef = dbRootNode.getReference("locations/" + loopKey);
-
-            dbRef.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
-                @Override
-                public void onComplete(@NonNull Task<DataSnapshot> task) {
-                    if (!task.isSuccessful()) {
-                        Log.e("firebase", "Error getting data", task.getException());
-                    } else {
-                        double loop_long = (double) task.getResult().child("longitude").getValue();
-                        double loop_lat = (double) task.getResult().child("latitude").getValue();
-                        if (!isDistantEnough(loop_long, longitude) && !isDistantEnough(loop_lat, latitude))
-                        {
-                            currentKey = loopKey;
-                            firstLocationisInBD = true;
-                        }
-                    }
+//       result = false;
+        dbRef = dbRootNode.getReference("locations");
+        dbRef.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DataSnapshot> task) {
+                if (!task.isSuccessful()) {
+                    Log.e("firebase", "Error getting data", task.getException());
                 }
-            });
-        }
+                else {
+                    boolean isInBd = false;
+                    for (DataSnapshot d: task.getResult().getChildren()) {
+                        double loop_longitude = (double) d.child("longitude").getValue();
+                        double loop_latitude = (double) d.child("latitude").getValue();
+                        if (!isDistantEnough(loop_longitude, longitude) && !isDistantEnough(loop_latitude, latitude))
+                        {
+                            currentKey = d.getKey();
+                            isInBd = true;
+                        }
+
+                    }
+
+                    if (!isInBd)
+                    {
+                        dbRef = dbRootNode.getReference("locations").push();
+                        String locationKey = dbRef.getKey();
+                        Log.d("locationkey", locationKey);
+                        currentKey = locationKey;
+                        locationKeys.add(locationKey);
+                        dbRef.child("latitude").setValue(latitude);
+                        dbRef.child("longitude").setValue(longitude);
+                    }
+
+                    bluetoothAdapter.startDiscovery();
+
+                }
+            }
+        });
+
+
+
+
+
+
+
+
+
+
+
+
+//        for (int i = 0; i < locationKeys.size(); i++)
+//        {
+//            String loopKey = locationKeys.get(i);
+//            dbRef = dbRootNode.getReference("locations/" + loopKey);
+//
+//            dbRef.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+//                @Override
+//                public void onComplete(@NonNull Task<DataSnapshot> task) {
+//                    if (!task.isSuccessful()) {
+//                        Log.e("firebase", "Error getting data", task.getException());
+//                    } else {
+//                        double loop_long = (double) task.getResult().child("longitude").getValue();
+//                        double loop_lat = (double) task.getResult().child("latitude").getValue();
+//                        if (!isDistantEnough(loop_long, longitude) && !isDistantEnough(loop_lat, latitude))
+//                        {
+//                            currentKey = loopKey;
+//                            firstLocationisInBD = true;
+//                        }
+//                    }
+//                }
+//            });
+//        }
+
+        return 0;
     }
 
     private void getAllInitLocationKeys() {
