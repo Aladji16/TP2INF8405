@@ -28,7 +28,10 @@ import android.os.Bundle;
 import android.os.Looper;
 import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ListAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -198,8 +201,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                                 // RESET EVERTYHING
                                 nearbyDevices = new ArrayList<Device>();
-                                TextView liste = findViewById(R.id.textView);
-                                liste.setText("");
+//                                TextView liste = findViewById(R.id.textView);
+//                                liste.setText("");
 
 
                                 handleFirstLocation(location);
@@ -248,8 +251,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                     // RESET EVERYTHING
                     nearbyDevices = new ArrayList<Device>();
-                    TextView liste = findViewById(R.id.textView);
-                    liste.setText("");
+//                    TextView liste = findViewById(R.id.textView);
+//                    liste.setText("");
 
 
                     Log.d("LOCATION","new location");
@@ -421,7 +424,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 //si le device n'existe pas encore dans la table
                                 if (!task.getResult().hasChild(deviceHardwareAddress))
                                 {
-                                    Log.d("NEW", "new device...");
+//                                    Log.d("NEW", "new device...");
                                     // Write a message to the database
                                     dbRef.child(deviceHardwareAddress).child("name").setValue(finalDeviceName);
                                     dbRef.child(deviceHardwareAddress).child("alias").setValue(finalDeviceAlias);
@@ -512,7 +515,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 //    @RequiresApi(api = Build.VERSION_CODES.N)
     private void addNearbyDevice(String macAddr, String name, String alias, String type) {
 
-        TextView liste = findViewById(R.id.textView);
+//        TextView liste = findViewById(R.id.textView);
 
         Device discoveredDevice = new Device();
         discoveredDevice.mac_addr = macAddr;
@@ -520,6 +523,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         discoveredDevice.alias = alias;
         discoveredDevice.type = type;
 
+        ListView listView = findViewById(R.id.listView);
 
         boolean contains  = false;
         //le code en dessous ne fonctionne pas
@@ -541,8 +545,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         if (nearbyDevices.isEmpty() || !contains) {
             nearbyDevices.add(discoveredDevice);
-            Log.d("addDevice", "added device to list : "+macAddr);
-            liste.setText(liste.getText() + discoveredDevice.name + "\n" + discoveredDevice.mac_addr + "\n" + "-------------------------" + "\n");
+//            Log.d("addDevice", "added device to list : "+macAddr);
+//            liste.setText(liste.getText() + discoveredDevice.name + "\n" + discoveredDevice.mac_addr + "\n" + "-------------------------" + "\n");
+            Button button = new Button(getBaseContext());
+            button.setText(name + "\n" + macAddr);
+            listView.addHeaderView(button);
+            listView.setAdapter(new ArrayAdapter(getBaseContext(),R.layout.test));
 
         }
     }
