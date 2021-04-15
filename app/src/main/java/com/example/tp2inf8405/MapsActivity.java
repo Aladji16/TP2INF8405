@@ -25,13 +25,16 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -547,9 +550,57 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             nearbyDevices.add(discoveredDevice);
 //            Log.d("addDevice", "added device to list : "+macAddr);
 //            liste.setText(liste.getText() + discoveredDevice.name + "\n" + discoveredDevice.mac_addr + "\n" + "-------------------------" + "\n");
+
+            //https://stackoverflow.com/questions/13005549/how-to-use-addheaderview-to-add-a-simple-imageview-to-a-listview
+
             Button button = new Button(getBaseContext());
             button.setText(name + "\n" + macAddr);
+
+            button.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    String toastText = "Full device information : \n" +
+                            "Name : "+name+"\n"+
+                            "Alias : "+alias+"\n"+
+                            "Mac address : "+macAddr+"\n"+
+                            "Device type : "+type;
+
+                    //affichage infos sur l'écran
+                    Toast toast = Toast.makeText(getApplicationContext(), toastText, Toast.LENGTH_LONG);
+                    toast.show();
+
+                    //propositions de fonctionnalités
+                    AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MapsActivity.this);
+                    alertDialogBuilder.setTitle("Fonctionnalités : \n");
+                    //on ne considère pas ici la fonctionnalité "comment y aller" comme nous sommes déjà à l'emplacement
+
+                    alertDialogBuilder.setItems(new CharSequence[]
+                                    {"Ajouter aux favoris", "Partager"},
+                            new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+
+
+                                    switch (which) {
+                                        case 0:
+                                            Log.d("click1","bouton 1 clické");
+                                            break;
+                                        case 1:
+                                            Log.d("click2","bouton 2 clické");
+                                            break;
+                                    }
+                                }
+                            });
+
+                    AlertDialog alertDialog = alertDialogBuilder.create();
+                    new Handler().postDelayed(alertDialog::show, 3600);
+
+
+                }
+            });
+            //https://stackoverflow.com/questions/8933515/android-button-created-in-run-time-to-match-parent-in-java
             listView.addHeaderView(button);
+
             listView.setAdapter(new ArrayAdapter(getBaseContext(),R.layout.test));
 
         }
