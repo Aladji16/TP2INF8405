@@ -582,11 +582,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
                                     switch (which) {
-                                        case 0:
-                                            shareDevice(discoveredDevice);
+                                        case 0: //ajout aux favoris
+                                            button.setText("*" + button.getText()); //étoile pour distinguer favoris
+                                            addToFavorites(discoveredDevice);
                                             break;
-                                        case 1:
-                                            Log.d("click2","bouton 2 clické");
+                                        case 1: //partage
+                                            shareDevice(discoveredDevice);
+
                                             break;
                                     }
                                 }
@@ -726,6 +728,36 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         Intent share = Intent.createChooser(send, null);
         startActivity(share);
+    }
+
+    private void addToFavorites(Device device)
+    {
+        dbRef = dbRootNode.getReference("favorites").push();
+
+        dbRef.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DataSnapshot> task) {
+                if (!task.isSuccessful()) {
+                    Log.e("firebase", "Error getting data", task.getException());
+                } else {
+                    dbRef.child(device.mac_addr).child("name").setValue(device.name);
+                    dbRef.child(device.mac_addr).child("alias").setValue(device.alias);
+                    dbRef.child(device.mac_addr).child("type").setValue(device.type);
+//                    //si le device n'existe pas encore dans la table
+//                    if (!task.getResult().hasChild(deviceHardwareAddress))
+//                    {
+////                                    Log.d("NEW", "new device...");
+//                        // Write a message to the database
+//                        dbRef.child(deviceHardwareAddress).child("name").setValue(finalDeviceName);
+//                        dbRef.child(deviceHardwareAddress).child("alias").setValue(finalDeviceAlias);
+//                        dbRef.child(deviceHardwareAddress).child("type").setValue(finalDeviceType);
+//                    }
+
+
+                }
+            }
+        });
+
     }
 
     private void getAllInitLocationKeys() {
