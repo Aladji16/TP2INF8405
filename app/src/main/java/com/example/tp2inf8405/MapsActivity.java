@@ -509,7 +509,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         alert.show();
     }
     
-    @RequiresApi(api = Build.VERSION_CODES.N)
+//    @RequiresApi(api = Build.VERSION_CODES.N)
     private void addNearbyDevice(String macAddr, String name, String alias, String type) {
 
         TextView liste = findViewById(R.id.textView);
@@ -521,7 +521,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         discoveredDevice.type = type;
 
 
-        boolean contains  = nearbyDevices.stream().filter(device -> device.mac_addr.equals(macAddr)).findFirst().orElse(null) != null;
+        boolean contains  = false;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            contains = nearbyDevices.stream().filter(device -> device.mac_addr.equals(macAddr)).findFirst().orElse(null) != null;
+        }
 
         if (nearbyDevices.isEmpty() || !contains) {
             nearbyDevices.add(discoveredDevice);
@@ -544,9 +547,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     } else {
                         for (DataSnapshot d: task.getResult().getChildren()) {
 
-                            if (d.getKey().equals(deviceHardwareAddress) && loopKey != currentKey) {
+                            if (d.getKey().equals(deviceHardwareAddress) && !loopKey.equals(currentKey)) {
                                 d.getRef().removeValue();
-                                Log.d("firebase MAC addr", "Removing device " + deviceHardwareAddress + " from location " + loopKey);
+                                Log.d("firebase MAC addr", "Removing device " + deviceHardwareAddress + " from location " + loopKey +
+                                        "\nTrue key = " + currentKey);
 
                             }
                         }
