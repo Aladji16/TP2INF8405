@@ -583,7 +583,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                                     switch (which) {
                                         case 0:
-                                            Log.d("click1","bouton 1 clické");
+                                            shareDevice(discoveredDevice);
                                             break;
                                         case 1:
                                             Log.d("click2","bouton 2 clické");
@@ -710,6 +710,22 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 //        }
 
         return 0;
+    }
+
+    private void shareDevice(Device device)
+    {
+        Intent send = new Intent();
+        String deviceName = device.name;
+        String deviceAlias = device.alias;
+        String deviceType = device.type;
+        String deviceHardwareAddress = device.mac_addr;
+        send.setAction(Intent.ACTION_SEND);
+        send.putExtra(Intent.EXTRA_TEXT, deviceName + " " + deviceAlias +
+                " " + deviceType + " " + deviceHardwareAddress);
+        send.setType("text/plain");
+
+        Intent share = Intent.createChooser(send, null);
+        startActivity(share);
     }
 
     private void getAllInitLocationKeys() {
