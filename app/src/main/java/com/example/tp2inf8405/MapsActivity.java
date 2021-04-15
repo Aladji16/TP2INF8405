@@ -370,7 +370,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
             else if (BluetoothDevice.ACTION_FOUND.equals(action)) {
 
-                Log.d("nearby device", "action found");
+//                Log.d("nearby device", "action found");
 
                 currentDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 String deviceName = currentDevice.getName();
@@ -402,7 +402,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
                 String deviceHardwareAddress = currentDevice.getAddress(); // MAC address
-                Log.d("Device detected",deviceHardwareAddress);
+//                Log.d("Device detected",deviceHardwareAddress);
 
                 updateDeviceLocation(deviceHardwareAddress);
 
@@ -522,12 +522,26 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
         boolean contains  = false;
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-            contains = nearbyDevices.stream().filter(device -> device.mac_addr.equals(macAddr)).findFirst().orElse(null) != null;
+        //le code en dessous ne fonctionne pas
+//        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+//            contains = nearbyDevices.stream().filter(device -> device.mac_addr.equals(macAddr)).findFirst().orElse(null) != null;
+//        }
+        int i = 0;
+        if (!nearbyDevices.isEmpty()) {
+            while (i < nearbyDevices.size() && !contains) {
+                Device listCurrentDevice = nearbyDevices.get(i);
+                String listCurrentAddress = listCurrentDevice.mac_addr;
+                if (macAddr.equals(listCurrentAddress))
+                {
+                    contains = true;
+                }
+                i++;
+            }
         }
 
         if (nearbyDevices.isEmpty() || !contains) {
             nearbyDevices.add(discoveredDevice);
+            Log.d("addDevice", "added device to list : "+macAddr);
             liste.setText(liste.getText() + discoveredDevice.name + "\n" + discoveredDevice.mac_addr + "\n" + "-------------------------" + "\n");
 
         }
