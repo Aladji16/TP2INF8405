@@ -315,128 +315,110 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         @Override
         public boolean onMarkerClick(Marker marker) {
 
-
-            LayoutInflater inflater = (LayoutInflater) MapsActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            View popupLayout = inflater.inflate(R.layout.popup_layout,null,false);
-            ListView popupListView = popupLayout.findViewById(R.id.popup_listView);
-
-            for (int i = 0; i < 50; i++) {
-                Button button = new Button(getBaseContext());
-                button.setText("Bonjour madame "+i);
-                popupListView.addHeaderView(button);
-                popupListView.setAdapter(new ArrayAdapter(getBaseContext(),R.layout.test));
-
-            }
-
-            FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) popupListView.getLayoutParams();
-            params.height = FrameLayout.LayoutParams.MATCH_PARENT;
-
-            final PopupWindow popupWindow = new PopupWindow(popupLayout, FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT);
-
-            //Set up touch closing outside of pop-up
-            popupWindow.setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
-            popupWindow.setTouchInterceptor(new View.OnTouchListener() {
-                public boolean onTouch(View v, MotionEvent event) {
-                    if(event.getAction() == MotionEvent.ACTION_OUTSIDE) {
-                        popupWindow.dismiss();
-                        return true;
-                    }
-                    return false;
-                }
-            });
-            popupWindow.setOutsideTouchable(true);
-            popupWindow.showAtLocation(findViewById(R.id.mainView), Gravity.CENTER, -50, 0);
-
-//            ListView popupListView = new ListView(getBaseContext());
-//
-//            for (int i = 0; i < 30; i++) {
-//                Button button = new Button(getBaseContext());
-//                button.setText("Bonjour madame "+i);
-//                popupListView.addHeaderView(button);
-//                popupListView.setAdapter(new ArrayAdapter(getBaseContext(),R.layout.test));
-//            }
-//
-//            PopupWindow popupWindow = new PopupWindow(markerListView, 300, 300);
-//
-//            //https://tekeye.uk/android/examples/ui/android-popup-window
-//            //Set up touch closing outside of pop-up
-//            popupWindow.setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
-//            popupWindow.setTouchInterceptor(new View.OnTouchListener() {
-//                public boolean onTouch(View v, MotionEvent event) {
-//                    if(event.getAction() == MotionEvent.ACTION_OUTSIDE) {
-//                        popupWindow.dismiss();
-//                        return true;
-//                    }
-//                    return false;
-//                }
-//            });
-//            popupWindow.setOutsideTouchable(true);
-//
-//
-//            LayoutInflater inflater = (LayoutInflater) MapsActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-//            //Inflate the view from a predefined XML layout (no need for root id, using entire layout)
-////            View layout = inflater.inflate(R.layout.popup_layout,null);
-//
-//            popupWindow.showAtLocation(findViewById(R.id.mainView), Gravity.CENTER, 0, 0);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
             LatLng clicked_position = marker.getPosition();
             double clicked_latitude = clicked_position.latitude;
             double clicked_longitude = clicked_position.longitude;
+            LatLng currentPos = currentPosMarker.getPosition();
+            if (isDistantEnough(clicked_latitude, currentPos.latitude) || isDistantEnough(clicked_longitude,currentPos.longitude))
+            {
+                for (int i = 0; i < locationKeys.size(); i++) {
+                String loopKey = locationKeys.get(i);
+                dbRef = dbRootNode.getReference("locations/" + loopKey);
+                dbRef.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DataSnapshot> task) {
+                        if (!task.isSuccessful()) {
+                            Log.e("firebase", "Error getting data", task.getException());
+                        }
+                        else {
+                            DataSnapshot snap_long = task.getResult().child("longitude");
+                            DataSnapshot snap_lat = task.getResult().child("latitude");
+                            double long_loop = (double) snap_long.getValue();
+                            double lat_loop = (double) snap_lat.getValue();
+
+                            if (!isDistantEnough(clicked_latitude, lat_loop) && !isDistantEnough(clicked_longitude, long_loop))
+                            {
+                                    String mac_addr = "", name = "", alias = "", type = "";
+
+                                    LayoutInflater inflater = (LayoutInflater) MapsActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                                    View popupLayout = inflater.inflate(R.layout.popup_layout,null,false);
+                                    ListView popupListView = popupLayout.findViewById(R.id.popup_listView);
+
+
+                                    FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) popupListView.getLayoutParams();
+                                    params.height = FrameLayout.LayoutParams.MATCH_PARENT;
 
 
 
-//            for (int i = 0; i < locationKeys.size(); i++) {
-//                String loopKey = locationKeys.get(i);
-//                dbRef = dbRootNode.getReference("locations/" + loopKey);
-//                dbRef.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
-//                    @Override
-//                    public void onComplete(@NonNull Task<DataSnapshot> task) {
-//                        if (!task.isSuccessful()) {
-//                            Log.e("firebase", "Error getting data", task.getException());
-//                        }
-//                        else {
-//                            //TODO : ouvrir la fenêtre seulement si c'est différent de currentKey
-//
-//                            DataSnapshot snap_long = task.getResult().child("longitude");
-//                            DataSnapshot snap_lat = task.getResult().child("latitude");
-//                            double long_loop = (double) snap_long.getValue();
-//                            double lat_loop = (double) snap_lat.getValue();
-//
-//                            String mac_addr = "", name = "", alias = "", type = "";
-//
-//                            for (DataSnapshot d: task.getResult().getChildren()) {
-//                                if (! d.getKey().equals("latitude") && ! d.getKey().equals("longitude"))
-//                                {
-//                                    mac_addr = String.valueOf(d.getKey());
-//                                    name = String.valueOf(d.child("name").getValue());
-//                                    alias = String.valueOf(d.child("alias").getValue());
-//                                    type = String.valueOf(d.child("type").getValue());
-//
-//
-//                                }
-//
-//
-//                            }
-//                        }
-//                    }
-//
-//                });
-//            }
+                                    for (DataSnapshot d : task.getResult().getChildren()) {
+                                        if (!d.getKey().equals("latitude") && !d.getKey().equals("longitude")) {
+                                            mac_addr = String.valueOf(d.getKey());
+                                            name = String.valueOf(d.child("name").getValue());
+                                            alias = String.valueOf(d.child("alias").getValue());
+                                            type = String.valueOf(d.child("type").getValue());
+
+                                            Device currentDevice = new Device();
+                                            currentDevice.mac_addr = mac_addr;
+                                            currentDevice.name = name;
+                                            currentDevice.alias = alias;
+                                            currentDevice.type = type;
+
+                                            Button button = new Button(getBaseContext());
+                                            button.setText(name+"\n"+mac_addr);
+
+
+                                            String finalName = name;
+                                            String finalAlias = alias;
+                                            String finalMac_addr = mac_addr;
+                                            String finalType = type;
+                                            button.setOnClickListener(new View.OnClickListener() {
+                                                @Override
+                                                public void onClick(View view) {
+                                                    String toastText = "Full device information : \n" +
+                                                            "Name : "+ finalName +"\n"+
+                                                            "Alias : "+ finalAlias +"\n"+
+                                                            "Mac address : "+ finalMac_addr +"\n"+
+                                                            "Device type : "+ finalType;
+                                                    //affichage infos sur l'écran
+                                                    Toast toast = Toast.makeText(getApplicationContext(), toastText, Toast.LENGTH_LONG);
+                                                    toast.show();
+                                                    showCurrentAlertDialogBuilder(currentDevice, button);
+                                                }
+                                            });
+
+
+
+                                            popupListView.addHeaderView(button);
+                                            popupListView.setAdapter(new ArrayAdapter(getBaseContext(),R.layout.test));
+
+                                        }
+                                    }
+
+                                final PopupWindow popupWindow = new PopupWindow(popupLayout, FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT);
+
+                                //Set up touch closing outside of pop-up
+                                popupWindow.setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
+                                popupWindow.setTouchInterceptor(new View.OnTouchListener() {
+                                    public boolean onTouch(View v, MotionEvent event) {
+                                        if(event.getAction() == MotionEvent.ACTION_OUTSIDE) {
+                                            popupWindow.dismiss();
+                                            return true;
+                                        }
+                                        return false;
+                                    }
+                                });
+                                popupWindow.setOutsideTouchable(true);
+                                popupWindow.showAtLocation(findViewById(R.id.mainView), Gravity.CENTER, -50, 0);
+
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+
+
+
             return false; //comportement par défaut, afficher le titre de l'épingle
         }
     };
@@ -681,7 +663,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 //affichage infos sur l'écran
                                 Toast toast = Toast.makeText(getApplicationContext(), toastText, Toast.LENGTH_LONG);
                                 toast.show();
-                                showAlertDialogBuilder(discoveredDevice, button);
+                                showCurrentAlertDialogBuilder(discoveredDevice, button);
                             }
                         });
                         //https://stackoverflow.com/questions/8933515/android-button-created-in-run-time-to-match-parent-in-java
@@ -860,7 +842,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
     }
 
-    private void showAlertDialogBuilder(Device discoveredDevice, Button button) {
+    private void showCurrentAlertDialogBuilder(Device discoveredDevice, Button button) {
 
 
         dbRef = dbRootNode.getReference("favorites");
