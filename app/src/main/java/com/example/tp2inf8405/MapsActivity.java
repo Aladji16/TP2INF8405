@@ -331,7 +331,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) popupListView.getLayoutParams();
             params.height = FrameLayout.LayoutParams.MATCH_PARENT;
 
-            final PopupWindow popupWindow = new PopupWindow(popupLayout, FrameLayout.LayoutParams.WRAP_CONTENT, 500);
+            final PopupWindow popupWindow = new PopupWindow(popupLayout, FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT);
 
             //Set up touch closing outside of pop-up
             popupWindow.setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
