@@ -427,7 +427,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 //si le device n'existe pas encore dans la table
                                 if (!task.getResult().hasChild(deviceHardwareAddress))
                                 {
-                                    Log.d("NEW", "new device : "+deviceHardwareAddress);
+//                                    Log.d("NEW", "new device : "+deviceHardwareAddress);
                                     // Write a message to the database
                                     dbRootNode.getReference("locations/" + currentKey).child(deviceHardwareAddress).child("name").setValue(finalDeviceName);
                                     dbRootNode.getReference("locations/" + currentKey).child(deviceHardwareAddress).child("alias").setValue(finalDeviceAlias);
@@ -604,30 +604,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     }
                 }
             });
-
-
-
-//
-//            button.setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View view) {
-//
-////                    isDeviceInFavorites(discoveredDevice);
-//                    String toastText = "Full device information : \n" +
-//                            "Name : "+name+"\n"+
-//                            "Alias : "+alias+"\n"+
-//                            "Mac address : "+macAddr+"\n"+
-//                            "Device type : "+type;
-//                    //affichage infos sur l'écran
-//                    Toast toast = Toast.makeText(getApplicationContext(), toastText, Toast.LENGTH_LONG);
-//                    toast.show();
-//                    showAlertDialogBuilder(discoveredDevice, button);
-//                }
-//            });
-//            //https://stackoverflow.com/questions/8933515/android-button-created-in-run-time-to-match-parent-in-java
-//            listView.addHeaderView(button);
-//
-//            listView.setAdapter(new ArrayAdapter(getBaseContext(),R.layout.test));
 
         }
     }
