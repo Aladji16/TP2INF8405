@@ -21,6 +21,7 @@ import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
@@ -28,12 +29,16 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -223,7 +228,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 LatLng test = new LatLng(latitude, longitude);
                                 currentPosMarker = mMap.addMarker(new MarkerOptions().position(test).icon(BitmapDescriptorFactory.fromResource(R.drawable.stickman)).title("CurrentPosition"));
 
-                                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(test,20));
+                                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(test,15));
 
                             }
 
@@ -278,7 +283,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     }
 
                     currentPosMarker = mMap.addMarker(new MarkerOptions().position(test).icon(BitmapDescriptorFactory.fromResource(R.drawable.stickman)).title("CurrentPosition"));
-                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(test,20));
+                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(test,15));
 
                 }
 
@@ -306,48 +311,83 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private GoogleMap.OnMarkerClickListener eventMarkerClickListener = new GoogleMap.OnMarkerClickListener() {
         @Override
         public boolean onMarkerClick(Marker marker) {
+            ListView markerListView = new ListView(getBaseContext());
+
+            for (int i = 0; i < 30; i++) {
+                Button button = new Button(getBaseContext());
+                button.setText("Bonjour madame "+i);
+                markerListView.addHeaderView(button);
+                markerListView.setAdapter(new ArrayAdapter(getBaseContext(),R.layout.test));
+            }
+
+            PopupWindow popupWindow = new PopupWindow(markerListView, 300, 300);
+
+            //https://tekeye.uk/android/examples/ui/android-popup-window
+            //Set up touch closing outside of pop-up
+            popupWindow.setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
+            popupWindow.setTouchInterceptor(new View.OnTouchListener() {
+                public boolean onTouch(View v, MotionEvent event) {
+                    if(event.getAction() == MotionEvent.ACTION_OUTSIDE) {
+                        popupWindow.dismiss();
+                        return true;
+                    }
+                    return false;
+                }
+            });
+            popupWindow.setOutsideTouchable(true);
+
+
+            LayoutInflater inflater = (LayoutInflater) MapsActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            //Inflate the view from a predefined XML layout (no need for root id, using entire layout)
+//            View layout = inflater.inflate(R.layout.popup_layout,null);
+
+            popupWindow.showAtLocation(findViewById(R.id.mainView), Gravity.CENTER, 0, 0);
+
+
             LatLng clicked_position = marker.getPosition();
             double clicked_latitude = clicked_position.latitude;
             double clicked_longitude = clicked_position.longitude;
 
 
 
-            for (int i = 0; i < locationKeys.size(); i++) {
-                String loopKey = locationKeys.get(i);
-                dbRef = dbRootNode.getReference("locations/" + loopKey);
-                dbRef.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DataSnapshot> task) {
-                        if (!task.isSuccessful()) {
-                            Log.e("firebase", "Error getting data", task.getException());
-                        }
-                        else {
-                            DataSnapshot snap_long = task.getResult().child("longitude");
-                            DataSnapshot snap_lat = task.getResult().child("latitude");
-                            double long_loop = (double) snap_long.getValue();
-                            double lat_loop = (double) snap_lat.getValue();
-
-                            String mac_addr = "", name = "", alias = "", type = "";
-
-                            for (DataSnapshot d: task.getResult().getChildren()) {
-                                if (! d.getKey().equals("latitude") && ! d.getKey().equals("longitude"))
-                                {
-                                    mac_addr = String.valueOf(d.getKey());
-                                    name = String.valueOf(d.child("name").getValue());
-                                    alias = String.valueOf(d.child("alias").getValue());
-                                    type = String.valueOf(d.child("type").getValue());
-
-
-                                }
-
-
-                            }
-                        }
-                    }
-
-                });
-            }
-            return false;
+//            for (int i = 0; i < locationKeys.size(); i++) {
+//                String loopKey = locationKeys.get(i);
+//                dbRef = dbRootNode.getReference("locations/" + loopKey);
+//                dbRef.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+//                    @Override
+//                    public void onComplete(@NonNull Task<DataSnapshot> task) {
+//                        if (!task.isSuccessful()) {
+//                            Log.e("firebase", "Error getting data", task.getException());
+//                        }
+//                        else {
+//                            //TODO : ouvrir la fenêtre seulement si c'est différent de currentKey
+//
+//                            DataSnapshot snap_long = task.getResult().child("longitude");
+//                            DataSnapshot snap_lat = task.getResult().child("latitude");
+//                            double long_loop = (double) snap_long.getValue();
+//                            double lat_loop = (double) snap_lat.getValue();
+//
+//                            String mac_addr = "", name = "", alias = "", type = "";
+//
+//                            for (DataSnapshot d: task.getResult().getChildren()) {
+//                                if (! d.getKey().equals("latitude") && ! d.getKey().equals("longitude"))
+//                                {
+//                                    mac_addr = String.valueOf(d.getKey());
+//                                    name = String.valueOf(d.child("name").getValue());
+//                                    alias = String.valueOf(d.child("alias").getValue());
+//                                    type = String.valueOf(d.child("type").getValue());
+//
+//
+//                                }
+//
+//
+//                            }
+//                        }
+//                    }
+//
+//                });
+//            }
+            return false; //comportement par défaut, afficher le titre de l'épingle
         }
     };
 
@@ -551,10 +591,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             //https://stackoverflow.com/questions/13005549/how-to-use-addheaderview-to-add-a-simple-imageview-to-a-listview
 
             Button button = new Button(getBaseContext());
-//            button.setText(name + "\n" + macAddr);
-            //TODO : si l'appareil appartient déjà aux favoris, mettre l'étoile devant le texte
-            //TODO : faire une disjonction des cas : si l'appareil appartient déjà aux favoris, on aura
-            //comme boutons "retirer des favoris"; si appartient pas...
 
 
             dbRef = dbRootNode.getReference("favorites");
