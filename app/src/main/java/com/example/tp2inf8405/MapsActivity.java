@@ -427,11 +427,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 //si le device n'existe pas encore dans la table
                                 if (!task.getResult().hasChild(deviceHardwareAddress))
                                 {
-//                                    Log.d("NEW", "new device...");
+                                    Log.d("NEW", "new device : "+deviceHardwareAddress);
                                     // Write a message to the database
-                                    dbRef.child(deviceHardwareAddress).child("name").setValue(finalDeviceName);
-                                    dbRef.child(deviceHardwareAddress).child("alias").setValue(finalDeviceAlias);
-                                    dbRef.child(deviceHardwareAddress).child("type").setValue(finalDeviceType);
+                                    dbRootNode.getReference("locations/" + currentKey).child(deviceHardwareAddress).child("name").setValue(finalDeviceName);
+                                    dbRootNode.getReference("locations/" + currentKey).child(deviceHardwareAddress).child("alias").setValue(finalDeviceAlias);
+                                    dbRootNode.getReference("locations/" + currentKey).child(deviceHardwareAddress).child("type").setValue(finalDeviceType);
                                 }
 
 
@@ -548,62 +548,86 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         if (nearbyDevices.isEmpty() || !contains) {
             nearbyDevices.add(discoveredDevice);
-//            Log.d("addDevice", "added device to list : "+macAddr);
-//            liste.setText(liste.getText() + discoveredDevice.name + "\n" + discoveredDevice.mac_addr + "\n" + "-------------------------" + "\n");
-
             //https://stackoverflow.com/questions/13005549/how-to-use-addheaderview-to-add-a-simple-imageview-to-a-listview
 
             Button button = new Button(getBaseContext());
-            button.setText(name + "\n" + macAddr);
+//            button.setText(name + "\n" + macAddr);
+            //TODO : si l'appareil appartient déjà aux favoris, mettre l'étoile devant le texte
+            //TODO : faire une disjonction des cas : si l'appareil appartient déjà aux favoris, on aura
+            //comme boutons "retirer des favoris"; si appartient pas...
 
-            button.setOnClickListener(new View.OnClickListener() {
+
+            dbRef = dbRootNode.getReference("favorites");
+            dbRef.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
                 @Override
-                public void onClick(View view) {
-                    String toastText = "Full device information : \n" +
-                            "Name : "+name+"\n"+
-                            "Alias : "+alias+"\n"+
-                            "Mac address : "+macAddr+"\n"+
-                            "Device type : "+type;
+                public void onComplete(@NonNull Task<DataSnapshot> task) {
+                    if (!task.isSuccessful()) {
+                        Log.e("firebase", "Error getting data", task.getException());
+                    }
+                    else
+                    {
+                        boolean isInFavorites = false;
+                        for (DataSnapshot d: task.getResult().getChildren()) {
+                            for (DataSnapshot d_: d.getChildren())
+                            {
+                                if (d_.getKey().equals(discoveredDevice.mac_addr))
+                                {
+                                    isInFavorites = true;
+                                    button.setText("*" + name + "\n" + macAddr);
 
-                    //affichage infos sur l'écran
-                    Toast toast = Toast.makeText(getApplicationContext(), toastText, Toast.LENGTH_LONG);
-                    toast.show();
-
-                    //propositions de fonctionnalités
-                    AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MapsActivity.this);
-                    alertDialogBuilder.setTitle("Fonctionnalités : \n");
-                    //on ne considère pas ici la fonctionnalité "comment y aller" comme nous sommes déjà à l'emplacement
-
-                    alertDialogBuilder.setItems(new CharSequence[]
-                                    {"Ajouter aux favoris", "Partager"},
-                            new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-
-
-                                    switch (which) {
-                                        case 0: //ajout aux favoris
-                                            button.setText("*" + button.getText()); //étoile pour distinguer favoris
-                                            addToFavorites(discoveredDevice);
-                                            break;
-                                        case 1: //partage
-                                            shareDevice(discoveredDevice);
-
-                                            break;
-                                    }
                                 }
-                            });
+                            }
+                        }
+                        if (!isInFavorites)
+                        {
+                            button.setText(name + "\n" + macAddr );
+                        }
 
-                    AlertDialog alertDialog = alertDialogBuilder.create();
-                    new Handler().postDelayed(alertDialog::show, 3600);
 
-
+                        button.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                String toastText = "Full device information : \n" +
+                                        "Name : "+name+"\n"+
+                                        "Alias : "+alias+"\n"+
+                                        "Mac address : "+macAddr+"\n"+
+                                        "Device type : "+type;
+                                //affichage infos sur l'écran
+                                Toast toast = Toast.makeText(getApplicationContext(), toastText, Toast.LENGTH_LONG);
+                                toast.show();
+                                showAlertDialogBuilder(discoveredDevice, button);
+                            }
+                        });
+                        //https://stackoverflow.com/questions/8933515/android-button-created-in-run-time-to-match-parent-in-java
+                        listView.addHeaderView(button);
+                        listView.setAdapter(new ArrayAdapter(getBaseContext(),R.layout.test));
+                    }
                 }
             });
-            //https://stackoverflow.com/questions/8933515/android-button-created-in-run-time-to-match-parent-in-java
-            listView.addHeaderView(button);
 
-            listView.setAdapter(new ArrayAdapter(getBaseContext(),R.layout.test));
+
+
+//
+//            button.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View view) {
+//
+////                    isDeviceInFavorites(discoveredDevice);
+//                    String toastText = "Full device information : \n" +
+//                            "Name : "+name+"\n"+
+//                            "Alias : "+alias+"\n"+
+//                            "Mac address : "+macAddr+"\n"+
+//                            "Device type : "+type;
+//                    //affichage infos sur l'écran
+//                    Toast toast = Toast.makeText(getApplicationContext(), toastText, Toast.LENGTH_LONG);
+//                    toast.show();
+//                    showAlertDialogBuilder(discoveredDevice, button);
+//                }
+//            });
+//            //https://stackoverflow.com/questions/8933515/android-button-created-in-run-time-to-match-parent-in-java
+//            listView.addHeaderView(button);
+//
+//            listView.setAdapter(new ArrayAdapter(getBaseContext(),R.layout.test));
 
         }
     }
@@ -743,15 +767,119 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     dbRef.child(device.mac_addr).child("name").setValue(device.name);
                     dbRef.child(device.mac_addr).child("alias").setValue(device.alias);
                     dbRef.child(device.mac_addr).child("type").setValue(device.type);
-//                    //si le device n'existe pas encore dans la table
-//                    if (!task.getResult().hasChild(deviceHardwareAddress))
-//                    {
-////                                    Log.d("NEW", "new device...");
-//                        // Write a message to the database
-//                        dbRef.child(deviceHardwareAddress).child("name").setValue(finalDeviceName);
-//                        dbRef.child(deviceHardwareAddress).child("alias").setValue(finalDeviceAlias);
-//                        dbRef.child(deviceHardwareAddress).child("type").setValue(finalDeviceType);
-//                    }
+                }
+            }
+        });
+
+    }
+
+    private void removeFromFavorites(Device device)
+    {
+        dbRef = dbRootNode.getReference("favorites");
+        dbRef.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DataSnapshot> task) {
+                if (!task.isSuccessful()) {
+                    Log.e("firebase", "Error getting data", task.getException());
+                }
+                else {
+                    for (DataSnapshot d: task.getResult().getChildren()) {
+                        for (DataSnapshot d_: d.getChildren())
+                        {
+                            if (d_.getKey().equals(device.mac_addr))
+                            {
+                                d.getRef().removeValue();
+                            }
+                        }
+
+                    }
+                }
+            }
+        });
+    }
+
+    private void showAlertDialogBuilder(Device discoveredDevice, Button button) {
+
+
+        dbRef = dbRootNode.getReference("favorites");
+        dbRef.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DataSnapshot> task) {
+                if (!task.isSuccessful()) {
+                    Log.e("firebase", "Error getting data", task.getException());
+                }
+                else {
+                    boolean isInFavorites = false;
+                    for (DataSnapshot d: task.getResult().getChildren()) {
+                        for (DataSnapshot d_: d.getChildren())
+                        {
+                            if (d_.getKey().equals(discoveredDevice.mac_addr))
+                            {
+                                isInFavorites = true;
+                                {
+                                    //propositions de fonctionnalités
+                                    AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MapsActivity.this);
+                                    alertDialogBuilder.setTitle("Fonctionnalités : \n");
+                                    //on ne considère pas ici la fonctionnalité "comment y aller" comme nous sommes déjà à l'emplacement
+                                    alertDialogBuilder.setItems(new CharSequence[]
+                                                    {"Retirer des favoris", "Partager"},
+                                            new DialogInterface.OnClickListener() {
+                                                @Override
+                                                public void onClick(DialogInterface dialog, int which) {
+                                                    switch (which) {
+                                                        case 0: //retirer des favoris
+                                                            String newText = String.valueOf(button.getText()).replaceFirst("\\*","");
+                                                            button.setText(newText);
+                                                            removeFromFavorites(discoveredDevice);
+                                                            break;
+                                                        case 1: //partage
+                                                            shareDevice(discoveredDevice);
+                                                            break;
+                                                    }
+                                                }
+                                            });
+
+
+                                    AlertDialog alertDialog = alertDialogBuilder.create();
+                                    new Handler().postDelayed(alertDialog::show, 3600);
+                                }
+                            }
+
+
+                        }
+
+
+                    }
+                    if (isInFavorites == false)
+                    {
+                        {
+                            //propositions de fonctionnalités
+                            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MapsActivity.this);
+                            alertDialogBuilder.setTitle("Fonctionnalités : \n");
+                            //on ne considère pas ici la fonctionnalité "comment y aller" comme nous sommes déjà à l'emplacement
+                            alertDialogBuilder.setItems(new CharSequence[]
+                                            {"Ajouter aux favoris", "Partager"},
+                                    new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            switch (which) {
+                                                case 0:
+                                                    //ajout aux favoris
+                                                    button.setText("*" + button.getText()); //étoile pour distinguer favoris
+                                                    addToFavorites(discoveredDevice);
+                                                    break;
+                                                case 1: //partage
+                                                    shareDevice(discoveredDevice);
+                                                    break;
+                                            }
+                                        }
+                                    });
+
+
+                            AlertDialog alertDialog = alertDialogBuilder.create();
+                            new Handler().postDelayed(alertDialog::show, 3600);
+                        }
+                    }
 
 
                 }
@@ -759,6 +887,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
 
     }
+
 
     private void getAllInitLocationKeys() {
         dbRef = dbRootNode.getReference("locations");
