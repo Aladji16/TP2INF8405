@@ -311,18 +311,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private GoogleMap.OnMarkerClickListener eventMarkerClickListener = new GoogleMap.OnMarkerClickListener() {
         @Override
         public boolean onMarkerClick(Marker marker) {
-            ListView markerListView = new ListView(getBaseContext());
 
+
+            LayoutInflater inflater = (LayoutInflater) MapsActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            View popupLayout = inflater.inflate(R.layout.popup_layout,null,false);
+            ListView popupListView = popupLayout.findViewById(R.id.popup_listView);
             for (int i = 0; i < 30; i++) {
                 Button button = new Button(getBaseContext());
                 button.setText("Bonjour madame "+i);
-                markerListView.addHeaderView(button);
-                markerListView.setAdapter(new ArrayAdapter(getBaseContext(),R.layout.test));
+                popupListView.addHeaderView(button);
+                popupListView.setAdapter(new ArrayAdapter(getBaseContext(),R.layout.test));
             }
 
-            PopupWindow popupWindow = new PopupWindow(markerListView, 300, 300);
+            final PopupWindow popupWindow = new PopupWindow(popupLayout, 300, 300);
 
-            //https://tekeye.uk/android/examples/ui/android-popup-window
             //Set up touch closing outside of pop-up
             popupWindow.setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
             popupWindow.setTouchInterceptor(new View.OnTouchListener() {
@@ -335,13 +337,53 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 }
             });
             popupWindow.setOutsideTouchable(true);
+            popupWindow.showAtLocation(findViewById(R.id.mainView), Gravity.CENTER, -50, 0);
+
+//            ListView popupListView = new ListView(getBaseContext());
+//
+//            for (int i = 0; i < 30; i++) {
+//                Button button = new Button(getBaseContext());
+//                button.setText("Bonjour madame "+i);
+//                popupListView.addHeaderView(button);
+//                popupListView.setAdapter(new ArrayAdapter(getBaseContext(),R.layout.test));
+//            }
+//
+//            PopupWindow popupWindow = new PopupWindow(markerListView, 300, 300);
+//
+//            //https://tekeye.uk/android/examples/ui/android-popup-window
+//            //Set up touch closing outside of pop-up
+//            popupWindow.setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
+//            popupWindow.setTouchInterceptor(new View.OnTouchListener() {
+//                public boolean onTouch(View v, MotionEvent event) {
+//                    if(event.getAction() == MotionEvent.ACTION_OUTSIDE) {
+//                        popupWindow.dismiss();
+//                        return true;
+//                    }
+//                    return false;
+//                }
+//            });
+//            popupWindow.setOutsideTouchable(true);
+//
+//
+//            LayoutInflater inflater = (LayoutInflater) MapsActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+//            //Inflate the view from a predefined XML layout (no need for root id, using entire layout)
+////            View layout = inflater.inflate(R.layout.popup_layout,null);
+//
+//            popupWindow.showAtLocation(findViewById(R.id.mainView), Gravity.CENTER, 0, 0);
 
 
-            LayoutInflater inflater = (LayoutInflater) MapsActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            //Inflate the view from a predefined XML layout (no need for root id, using entire layout)
-//            View layout = inflater.inflate(R.layout.popup_layout,null);
 
-            popupWindow.showAtLocation(findViewById(R.id.mainView), Gravity.CENTER, 0, 0);
+
+
+
+
+
+
+
+
+
+
+
 
 
             LatLng clicked_position = marker.getPosition();
