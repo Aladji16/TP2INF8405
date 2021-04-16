@@ -10,6 +10,7 @@ import androidx.fragment.app.FragmentActivity;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.ActionBar;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothAdapter;
@@ -34,8 +35,10 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.PopupWindow;
@@ -316,14 +319,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             LayoutInflater inflater = (LayoutInflater) MapsActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             View popupLayout = inflater.inflate(R.layout.popup_layout,null,false);
             ListView popupListView = popupLayout.findViewById(R.id.popup_listView);
-            for (int i = 0; i < 30; i++) {
+
+            for (int i = 0; i < 50; i++) {
                 Button button = new Button(getBaseContext());
                 button.setText("Bonjour madame "+i);
                 popupListView.addHeaderView(button);
                 popupListView.setAdapter(new ArrayAdapter(getBaseContext(),R.layout.test));
+
             }
 
-            final PopupWindow popupWindow = new PopupWindow(popupLayout, 300, 300);
+            FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) popupListView.getLayoutParams();
+            params.height = FrameLayout.LayoutParams.MATCH_PARENT;
+
+            final PopupWindow popupWindow = new PopupWindow(popupLayout, FrameLayout.LayoutParams.WRAP_CONTENT, 500);
 
             //Set up touch closing outside of pop-up
             popupWindow.setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
