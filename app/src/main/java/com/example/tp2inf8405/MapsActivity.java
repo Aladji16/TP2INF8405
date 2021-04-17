@@ -344,12 +344,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             Log.e("firebase", "Error getting data", task.getException());
                         }
                         else {
-//                            DataSnapshot snap_long = task.getResult().child("longitude");
-//                            DataSnapshot snap_lat = task.getResult().child("latitude");
-//                            double long_loop = (double) snap_long.getValue();
-//                            double lat_loop = (double) snap_lat.getValue();
-//
-
                             if (!isDistantEnough(clicked_latitude, lat_loop) && !isDistantEnough(clicked_longitude, long_loop))
                             {
                                     String mac_addr = "", name = "", alias = "", type = "";
@@ -374,7 +368,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                             currentDevice.type = type;
 
                                             Button button = new Button(getBaseContext());
-                                            button.setText(name+"\n"+mac_addr);
+                                            if (favoritesList.contains(mac_addr))
+                                            {
+                                                button.setText("*"+name+"\n"+mac_addr);
+                                            }
+                                            else
+                                            {
+                                                button.setText(name+"\n"+mac_addr);
+                                            }
 
 
                                             String finalName = name;
@@ -392,7 +393,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                                     //affichage infos sur l'écran
                                                     Toast toast = Toast.makeText(getApplicationContext(), toastText, Toast.LENGTH_LONG);
                                                     toast.show();
-                                                    showCurrentAlertDialogBuilder(currentDevice, button);
+                                                    showOtherPosAlertDialogBuilder(currentDevice, button, clicked_latitude, clicked_longitude);
                                                 }
                                             });
 
@@ -424,9 +425,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     });
                 }
             }
-
-
-
             return false; //comportement par défaut, afficher le titre de l'épingle
         }
     };
@@ -652,7 +650,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     //affichage infos sur l'écran
                     Toast toast = Toast.makeText(getApplicationContext(), toastText, Toast.LENGTH_LONG);
                     toast.show();
-                    showCurrentAlertDialogBuilder(discoveredDevice, button);
+                    showCurrentPosAlertDialogBuilder(discoveredDevice, button);
                 }
             });
             //https://stackoverflow.com/questions/8933515/android-button-created-in-run-time-to-match-parent-in-java
@@ -796,7 +794,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
     }
 
-    private void showCurrentAlertDialogBuilder(Device discoveredDevice, Button button) {
+    private void showCurrentPosAlertDialogBuilder(Device discoveredDevice, Button button) {
 
         //propositions de fonctionnalités
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MapsActivity.this);
@@ -839,6 +837,66 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                     break;
                                 case 1: //partage
                                     shareDevice(discoveredDevice);
+                                    break;
+                            }
+                        }
+                    });
+        }
+
+        AlertDialog alertDialog = alertDialogBuilder.create();
+        new Handler().postDelayed(alertDialog::show, 3600);
+
+
+    }
+
+    private void showOtherPosAlertDialogBuilder(Device discoveredDevice, Button button, double latitude, double longitude) {
+
+        //propositions de fonctionnalités
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MapsActivity.this);
+        alertDialogBuilder.setTitle("Fonctionnalités : \n");
+        if (favoritesList.contains(discoveredDevice.mac_addr))
+        {
+            alertDialogBuilder.setItems(new CharSequence[]
+                            {"Retirer des favoris", "Partager", "Comment y aller"},
+                    new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            switch (which) {
+                                case 0: //retirer des favoris
+                                    String newText = String.valueOf(button.getText()).replaceFirst("\\*","");
+                                    button.setText(newText);
+                                    removeFromFavorites(discoveredDevice);
+                                    break;
+                                case 1: //partage
+                                    shareDevice(discoveredDevice);
+                                    break;
+                                case 2: //y aller
+                                    getDirection(latitude, longitude);
+                                    break;
+                            }
+                        }
+                    });
+        }
+
+        else
+        {
+            //on ne considère pas ici la fonctionnalité "comment y aller" comme nous sommes déjà à l'emplacement
+            alertDialogBuilder.setItems(new CharSequence[]
+                            {"Ajouter aux favoris", "Partager", "Comment y aller"},
+                    new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            switch (which) {
+                                case 0:
+                                    //ajout aux favoris
+                                    button.setText("*" + button.getText()); //étoile pour distinguer favoris
+                                    addToFavorites(discoveredDevice);
+                                    break;
+                                case 1: //partage
+                                    shareDevice(discoveredDevice);
+                                    break;
+                                case 2: //y aller
+                                    getDirection(latitude, longitude);
                                     break;
                             }
                         }
