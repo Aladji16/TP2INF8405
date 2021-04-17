@@ -70,6 +70,8 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Dictionary;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -84,6 +86,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private FirebaseDatabase dbRootNode = FirebaseDatabase.getInstance();
     private DatabaseReference dbRef = dbRootNode.getReference();
     private List<LocationKey> locationKeys = new ArrayList<LocationKey>();
+    private ArrayList<String> favoritesList = new ArrayList<String>();
 
     class Device {
         public String mac_addr;
@@ -116,6 +119,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         //        Get all locationIDs already in Firebase DB
         getAllInitLocationKeys();
+        getAllInitFavorites();
+
+
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.test);
@@ -314,6 +320,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private GoogleMap.OnMarkerClickListener eventMarkerClickListener = new GoogleMap.OnMarkerClickListener() {
         @Override
         public boolean onMarkerClick(Marker marker) {
+            Log.d("ok//",favoritesList.toString());
 
             LatLng clicked_position = marker.getPosition();
             double clicked_latitude = clicked_position.latitude;
@@ -941,4 +948,39 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
     }
+
+
+
+
+    private void getAllInitFavorites() {
+
+
+        dbRef = dbRootNode.getReference();
+        dbRef.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+            @RequiresApi(api = Build.VERSION_CODES.N)
+            @Override
+            public void onComplete(@NonNull Task<DataSnapshot> task) {
+                if (!task.isSuccessful()) {
+                    Log.e("firebase", "Error getting data", task.getException());
+                } else {
+                    DataSnapshot result = task.getResult();
+                    DataSnapshot favChildren = result.child("favorites");
+                    for (DataSnapshot d_fav: favChildren.getChildren())
+                    {
+                        for (DataSnapshot d_fav_1: d_fav.getChildren())
+                        {
+                            favoritesList.add(d_fav_1.getKey());
+                        }
+                    }
+
+
+                }
+            }
+        });
+
+    }
+
+
+
+
 }
