@@ -320,7 +320,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private GoogleMap.OnMarkerClickListener eventMarkerClickListener = new GoogleMap.OnMarkerClickListener() {
         @Override
         public boolean onMarkerClick(Marker marker) {
-            Log.d("ok//",favoritesList.toString());
 
             LatLng clicked_position = marker.getPosition();
             double clicked_latitude = clicked_position.latitude;
@@ -774,6 +773,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private void addToFavorites(Device device)
     {
+        favoritesList.add(device.mac_addr);
         dbRef = dbRootNode.getReference("favorites").push();
 
         dbRef.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
@@ -793,6 +793,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private void removeFromFavorites(Device device)
     {
+        favoritesList.remove(device.mac_addr);
         dbRef = dbRootNode.getReference("favorites");
         dbRef.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
             @Override
