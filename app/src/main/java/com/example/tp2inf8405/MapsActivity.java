@@ -25,6 +25,7 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.location.Location;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -324,6 +325,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             LatLng clicked_position = marker.getPosition();
             double clicked_latitude = clicked_position.latitude;
             double clicked_longitude = clicked_position.longitude;
+            
+
             LatLng currentPos = currentPosMarker.getPosition();
             if (isDistantEnough(clicked_latitude, currentPos.latitude) || isDistantEnough(clicked_longitude,currentPos.longitude))
             {
@@ -979,6 +982,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
 
+    }
+
+    public void getDirection(double latitude, double longitude) {
+        //https://developer.android.com/reference/android/net/Uri
+        Uri route = Uri.parse("google.navigation:q=" + latitude + "," + longitude);
+        Intent mapIntent = new Intent(Intent.ACTION_VIEW, route);
+        mapIntent.setPackage("com.google.android.apps.maps");
+        startActivity(mapIntent);
     }
 
 
