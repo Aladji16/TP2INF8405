@@ -332,7 +332,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             {
                 for (int i = 0; i < locationKeys.size(); i++) {
                 String loopKey = locationKeys.get(i).key;
-                dbRef = dbRootNode.getReference("locations/" + loopKey);
+                double long_loop = locationKeys.get(i).longitude;
+                double lat_loop = locationKeys.get(i).latitude;
+
+
+                    dbRef = dbRootNode.getReference("locations/" + loopKey);
                 dbRef.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<DataSnapshot> task) {
@@ -340,10 +344,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             Log.e("firebase", "Error getting data", task.getException());
                         }
                         else {
-                            DataSnapshot snap_long = task.getResult().child("longitude");
-                            DataSnapshot snap_lat = task.getResult().child("latitude");
-                            double long_loop = (double) snap_long.getValue();
-                            double lat_loop = (double) snap_lat.getValue();
+//                            DataSnapshot snap_long = task.getResult().child("longitude");
+//                            DataSnapshot snap_lat = task.getResult().child("latitude");
+//                            double long_loop = (double) snap_long.getValue();
+//                            double lat_loop = (double) snap_lat.getValue();
+//
 
                             if (!isDistantEnough(clicked_latitude, lat_loop) && !isDistantEnough(clicked_longitude, long_loop))
                             {
@@ -352,12 +357,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                     LayoutInflater inflater = (LayoutInflater) MapsActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                                     View popupLayout = inflater.inflate(R.layout.popup_layout,null,false);
                                     ListView popupListView = popupLayout.findViewById(R.id.popup_listView);
-
-
                                     FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) popupListView.getLayoutParams();
                                     params.height = FrameLayout.LayoutParams.MATCH_PARENT;
-
-
 
                                     for (DataSnapshot d : task.getResult().getChildren()) {
                                         if (!d.getKey().equals("latitude") && !d.getKey().equals("longitude")) {
@@ -394,8 +395,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                                     showCurrentAlertDialogBuilder(currentDevice, button);
                                                 }
                                             });
-
-
 
                                             popupListView.addHeaderView(button);
                                             popupListView.setAdapter(new ArrayAdapter(getBaseContext(),R.layout.test));
@@ -873,6 +872,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                 for (int i = 0; i < locationKeys.size(); i++) {
                     String loopKey = locationKeys.get(i).key;
+                    double latitude = locationKeys.get(i).latitude;
+                    double longitude = locationKeys.get(i).longitude;
                     dbRef = dbRootNode.getReference("locations/" + loopKey);
                     dbRef.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
                         @Override
@@ -881,8 +882,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 Log.e("firebase", "Error getting data", task.getException());
                             }
                             else {
-                                double latitude = (double) task.getResult().child("latitude").getValue();
-                                double longitude = (double) task.getResult().child("longitude").getValue();
+//                                double latitude = (double) task.getResult().child("latitude").getValue();
+//                                double longitude = (double) task.getResult().child("longitude").getValue();
                                 LatLng test1 = new LatLng(latitude, longitude);
                                 mMap.addMarker(new MarkerOptions().position(test1).icon(BitmapDescriptorFactory.fromResource(R.drawable.epingler)).title("Devices found in lat " + String.valueOf(latitude) + " and longitude " + String.valueOf(longitude)));
 
@@ -918,8 +919,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             favoritesList.add(d_fav_1.getKey());
                         }
                     }
-
-
                 }
             }
         });
