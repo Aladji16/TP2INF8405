@@ -7,11 +7,8 @@
          location permissions for the "MyLocation" functionality.
     -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
-    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
-    <uses-permission android:name="com.google.android.things.permission.MANAGE_GNSS_DRIVERS" />
 
     <application
         android:allowBackup="true"
@@ -20,13 +17,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.TP2INF8405">
-        <activity
-            android:name=".MainView"
-            android:screenOrientation="landscape"
-            android:label="@string/title_activity_main_view"
-            android:theme="@style/Theme.TP2INF8405.NoActionBar"></activity>
         <activity android:name=".SplashActivity"
-            android:screenOrientation="landscape">
+            android:screenOrientation="landscape"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -48,6 +41,7 @@
         <activity
             android:name=".MapsActivity"
             android:screenOrientation="landscape"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
             android:label="@string/title_activity_maps">
 
             <!-- <intent-filter> -->
