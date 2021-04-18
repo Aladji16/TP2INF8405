@@ -2,7 +2,6 @@ package com.example.tp2inf8405;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -10,7 +9,6 @@ import androidx.fragment.app.FragmentActivity;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.ActionBar;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothAdapter;
@@ -29,22 +27,16 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AbsListView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.FrameLayout;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.PopupWindow;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -69,12 +61,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Dictionary;
-import java.util.Hashtable;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -103,7 +91,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private Marker currentPosMarker;
     private FusedLocationProviderClient mFusedLocationClient;
 
-    private String currentKey; // TODO: Remplacer avec currentUserKey et delete celui-ci
+    private String currentUserLocationKey;
     private String currentUserKey;
 
     boolean isDarkMode = false;
@@ -127,8 +115,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         // Receive username from textInput on UserFirstPageActivity
         currentUsername = getIntent().getStringExtra("username");
         handleCurrentUsername();
-        getAllInitLocationKeys();
-        getAllInitFavorites();
 
         Button btn = findViewById(R.id.btn);
         ConstraintLayout container = (ConstraintLayout) findViewById(R.id.mainView);
@@ -136,13 +122,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(!isDarkMode) {
+                if (!isDarkMode) {
                     container.setBackgroundResource(R.color.black);
                     btn.setBackgroundColor(Color.rgb(77, 0, 153));
                     btn.setTextColor(Color.WHITE);
                     isDarkMode = true;
-                }
-                else if(isDarkMode) {
+                } else if (isDarkMode) {
                     container.setBackgroundResource(R.color.white);
                     btn.setBackgroundColor(Color.rgb(204, 153, 255));
                     btn.setTextColor(Color.BLACK);
@@ -154,27 +139,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         if (!bluetoothAdapter.isEnabled()) {
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBtIntent, 1);
-
-
-            //nécessité de demander l'autorisation pour l'accès aux localisations
-            int permissionCheck1 = ContextCompat.checkSelfPermission(getBaseContext(), Manifest.permission.ACCESS_COARSE_LOCATION);
-            int permissionCheck2 = ContextCompat.checkSelfPermission(getBaseContext(), Manifest.permission.ACCESS_FINE_LOCATION);
-
-            if (permissionCheck1 != PackageManager.PERMISSION_GRANTED || permissionCheck2 != PackageManager.PERMISSION_GRANTED)
-            {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, 2);
-            }
-        }
-
-        else {
-            //nécessité de demander l'autorisation pour l'accès aux localisations
-            int permissionCheck1 = ContextCompat.checkSelfPermission(getBaseContext(), Manifest.permission.ACCESS_COARSE_LOCATION);
-            int permissionCheck2 = ContextCompat.checkSelfPermission(getBaseContext(), Manifest.permission.ACCESS_FINE_LOCATION);
-
-            if (permissionCheck1 != PackageManager.PERMISSION_GRANTED || permissionCheck2 != PackageManager.PERMISSION_GRANTED)
-            {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, 2);
-            }
         }
 
 
@@ -204,56 +168,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        mFusedLocationClient.getLastLocation().addOnSuccessListener(
-                new OnSuccessListener<Location>() {
-                    @RequiresApi(api = Build.VERSION_CODES.N)
-                    @Override
-                    public void onSuccess(Location location) {
-                        if (location != null) {
-                            double latitude = location.getLatitude();
-                            double longitude = location.getLongitude();
-
-                            if (mLastLocation == null || isDistantEnough(latitude, mLastLocation.getLatitude())
-                                    || isDistantEnough(longitude, mLastLocation.getLongitude())) {
-
-                                Log.d("nearby device", "onSuccess 1st location");
-
-                                mLastLocation = location;
-
-                                // RESET EVERTYHING
-                                nearbyDevices = new ArrayList<Device>();
-//                                TextView liste = findViewById(R.id.textView);
-//                                liste.setText("");
-
-
-                                handleFirstLocation(location);
-//                                if (!firstLocationisInBD)
-//                                {
-//                                    dbRef = dbRootNode.getReference("locations").push();
-//                                    String locationKey = dbRef.getKey();
-//                                    Log.d("locationkey", locationKey);
-//                                    currentKey = locationKey;
-//                                    locationKeys.add(locationKey);
-//                                    dbRef.child("latitude").setValue(latitude);
-//                                    dbRef.child("longitude").setValue(longitude);
-//                                }
-
-                                LatLng test = new LatLng(latitude, longitude);
-                                currentPosMarker = mMap.addMarker(new MarkerOptions().position(test).icon(BitmapDescriptorFactory.fromResource(R.drawable.stickman)).title("CurrentPosition"));
-
-                                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(test,15));
-
-                            }
-
-                            String time = String.valueOf(mLastLocation.getTime());
-
-                        } else {
-                            Log.d("location", "no location found");
-                        }
-                    }
-                });
-
-
 
         locationCallback = new LocationCallback() {
             @Override
@@ -272,15 +186,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                     // RESET EVERYTHING
                     nearbyDevices = new ArrayList<Device>();
-//                    TextView liste = findViewById(R.id.textView);
-//                    liste.setText("");
 
-
-                    Log.d("LOCATION","new location");
+                    Log.d("LOCATION", "new location");
                     mLastLocation = location;
-                    dbRef = dbRootNode.getReference("locations").push();
+                    dbRef = dbRootNode.getReference("accounts/" + currentUserKey + "/locations").push();
                     String locationKey = dbRef.getKey();
-                    currentKey = locationKey;
+                    currentUserLocationKey = locationKey;
                     locationKeys.add(new LocationKey(locationKey, latitude, longitude));
                     dbRef.child("latitude").setValue(latitude);
                     dbRef.child("longitude").setValue(longitude);
@@ -296,7 +207,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     }
 
                     currentPosMarker = mMap.addMarker(new MarkerOptions().position(test).icon(BitmapDescriptorFactory.fromResource(R.drawable.stickman)).title("CurrentPosition"));
-                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(test,15));
+                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(test, 15));
 
                 }
 
@@ -308,8 +219,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
 
         registerReceiver(receiver, filter);
-//        bluetoothAdapter.startDiscovery();
-        mFusedLocationClient.getLastLocation();
 
         locationRequest = LocationRequest.create();
         locationRequest.setInterval(10000);
@@ -331,8 +240,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
             LatLng currentPos = currentPosMarker.getPosition();
-            if (isDistantEnough(clicked_latitude, currentPos.latitude) || isDistantEnough(clicked_longitude,currentPos.longitude))
-            {
+            if (isDistantEnough(clicked_latitude, currentPos.latitude) || isDistantEnough(clicked_longitude, currentPos.longitude)) {
                 for (int i = 0; i < locationKeys.size(); i++) {
                     String loopKey = locationKeys.get(i).key;
                     double long_loop = locationKeys.get(i).longitude;
@@ -345,14 +253,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         public void onComplete(@NonNull Task<DataSnapshot> task) {
                             if (!task.isSuccessful()) {
                                 Log.e("firebase", "Error getting data", task.getException());
-                            }
-                            else {
-                                if (!isDistantEnough(clicked_latitude, lat_loop) && !isDistantEnough(clicked_longitude, long_loop))
-                                {
+                            } else {
+                                if (!isDistantEnough(clicked_latitude, lat_loop) && !isDistantEnough(clicked_longitude, long_loop)) {
                                     String mac_addr = "", name = "", alias = "", type = "";
 
                                     LayoutInflater inflater = (LayoutInflater) MapsActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                                    View popupLayout = inflater.inflate(R.layout.popup_layout,null,false);
+                                    View popupLayout = inflater.inflate(R.layout.popup_layout, null, false);
                                     ListView popupListView = popupLayout.findViewById(R.id.popup_listView);
                                     FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) popupListView.getLayoutParams();
                                     params.height = FrameLayout.LayoutParams.MATCH_PARENT;
@@ -371,13 +277,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                             currentDevice.type = type;
 
                                             Button button = new Button(getBaseContext());
-                                            if (favoritesList.contains(mac_addr))
-                                            {
-                                                button.setText("*"+name+"\n"+mac_addr);
-                                            }
-                                            else
-                                            {
-                                                button.setText(name+"\n"+mac_addr);
+                                            if (favoritesList.contains(mac_addr)) {
+                                                button.setText("*" + name + "\n" + mac_addr);
+                                            } else {
+                                                button.setText(name + "\n" + mac_addr);
                                             }
 
 
@@ -389,10 +292,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                                 @Override
                                                 public void onClick(View view) {
                                                     String toastText = "Full device information : \n" +
-                                                            "Name : "+ finalName +"\n"+
-                                                            "Alias : "+ finalAlias +"\n"+
-                                                            "Mac address : "+ finalMac_addr +"\n"+
-                                                            "Device type : "+ finalType;
+                                                            "Name : " + finalName + "\n" +
+                                                            "Alias : " + finalAlias + "\n" +
+                                                            "Mac address : " + finalMac_addr + "\n" +
+                                                            "Device type : " + finalType;
                                                     //affichage infos sur l'écran
                                                     Toast toast = Toast.makeText(getApplicationContext(), toastText, Toast.LENGTH_LONG);
                                                     toast.show();
@@ -401,7 +304,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                             });
 
                                             popupListView.addHeaderView(button);
-                                            popupListView.setAdapter(new ArrayAdapter(getBaseContext(),R.layout.test));
+                                            popupListView.setAdapter(new ArrayAdapter(getBaseContext(), R.layout.test));
 
                                         }
                                     }
@@ -412,7 +315,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                     popupWindow.setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
                                     popupWindow.setTouchInterceptor(new View.OnTouchListener() {
                                         public boolean onTouch(View v, MotionEvent event) {
-                                            if(event.getAction() == MotionEvent.ACTION_OUTSIDE) {
+                                            if (event.getAction() == MotionEvent.ACTION_OUTSIDE) {
                                                 popupWindow.dismiss();
                                                 return true;
                                             }
@@ -443,19 +346,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, -1);
                 switch (state) {
                     case BluetoothAdapter.STATE_OFF:
-//                        Log.d("blutoh state", "off");
                         //surement besoin d'un message/toast "vous avez besoin de bluetooth pour..."
                         break;
                     case BluetoothAdapter.STATE_ON:
                         bluetoothAdapter.startDiscovery();
                         break;
                 }
-            }
-            else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
+            } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
                 bluetoothAdapter.startDiscovery();
 
-            }
-            else if (BluetoothDevice.ACTION_FOUND.equals(action)) {
+            } else if (BluetoothDevice.ACTION_FOUND.equals(action)) {
 
 //                Log.d("nearby device", "action found");
 
@@ -472,7 +372,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     deviceAlias = "Unknown";
                 }
                 String deviceType = " ";
-                switch(currentDevice.getType()) {
+                switch (currentDevice.getType()) {
                     case BluetoothDevice.DEVICE_TYPE_CLASSIC:
                         deviceType = "Classic";
                         break;
@@ -489,12 +389,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
                 String deviceHardwareAddress = currentDevice.getAddress(); // MAC address
-//                Log.d("Device detected",deviceHardwareAddress);
 
                 updateDeviceLocation(deviceHardwareAddress);
+                String userLocationKeyPath = "accounts/" + currentUserKey + "/locations/" + currentUserLocationKey;
 
-//                if (currentKey != null) {
-                dbRef = dbRootNode.getReference("locations/" + currentKey);
+                dbRef = dbRootNode.getReference(userLocationKeyPath);
 
                 String finalDeviceName = deviceName;
                 String finalDeviceAlias = deviceAlias;
@@ -506,13 +405,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             Log.e("firebase", "Error getting data", task.getException());
                         } else {
                             //si le device n'existe pas encore dans la table
-                            if (!task.getResult().hasChild(deviceHardwareAddress))
-                            {
-//                                    Log.d("NEW", "new device : "+deviceHardwareAddress);
+                            if (!task.getResult().hasChild(deviceHardwareAddress)) {
                                 // Write a message to the database
-                                dbRootNode.getReference("locations/" + currentKey).child(deviceHardwareAddress).child("name").setValue(finalDeviceName);
-                                dbRootNode.getReference("locations/" + currentKey).child(deviceHardwareAddress).child("alias").setValue(finalDeviceAlias);
-                                dbRootNode.getReference("locations/" + currentKey).child(deviceHardwareAddress).child("type").setValue(finalDeviceType);
+                                dbRootNode.getReference(userLocationKeyPath).child(deviceHardwareAddress).child("name").setValue(finalDeviceName);
+                                dbRootNode.getReference(userLocationKeyPath).child(deviceHardwareAddress).child("alias").setValue(finalDeviceAlias);
+                                dbRootNode.getReference(userLocationKeyPath).child(deviceHardwareAddress).child("type").setValue(finalDeviceType);
                             }
 
 
@@ -520,7 +417,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     }
                 });
                 addNearbyDevice(deviceHardwareAddress, finalDeviceName, finalDeviceAlias, finalDeviceType);
-//                }
             }
         }
     };
@@ -530,8 +426,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         int permissionCheck1 = ContextCompat.checkSelfPermission(getBaseContext(), Manifest.permission.ACCESS_COARSE_LOCATION);
         int permissionCheck2 = ContextCompat.checkSelfPermission(getBaseContext(), Manifest.permission.ACCESS_FINE_LOCATION);
 
-        if (permissionCheck1 != PackageManager.PERMISSION_GRANTED || permissionCheck2 != PackageManager.PERMISSION_GRANTED)
-        {
+        if (permissionCheck1 != PackageManager.PERMISSION_GRANTED || permissionCheck2 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, 2);
 
         }
@@ -554,7 +449,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         // Don't forget to unregister the ACTION_FOUND receiver.
         unregisterReceiver(receiver);
     }
-
 
 
     @Override
@@ -609,7 +503,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         ListView listView = findViewById(R.id.listView);
 
-        boolean contains  = false;
+        boolean contains = false;
         //le code en dessous ne fonctionne pas
 //        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
 //            contains = nearbyDevices.stream().filter(device -> device.mac_addr.equals(macAddr)).findFirst().orElse(null) != null;
@@ -619,8 +513,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             while (i < nearbyDevices.size() && !contains) {
                 Device listCurrentDevice = nearbyDevices.get(i);
                 String listCurrentAddress = listCurrentDevice.mac_addr;
-                if (macAddr.equals(listCurrentAddress))
-                {
+                if (macAddr.equals(listCurrentAddress)) {
                     contains = true;
                 }
                 i++;
@@ -633,12 +526,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             Button button = new Button(getBaseContext());
 
-            if (favoritesList.contains(discoveredDevice.mac_addr))
-            {
+            if (favoritesList.contains(discoveredDevice.mac_addr)) {
                 button.setText("*" + name + "\n" + macAddr);
-            }
-            else
-            {
+            } else {
                 button.setText(name + "\n" + macAddr);
             }
 
@@ -646,10 +536,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 @Override
                 public void onClick(View view) {
                     String toastText = "Full device information : \n" +
-                            "Name : "+name+"\n"+
-                            "Alias : "+alias+"\n"+
-                            "Mac address : "+macAddr+"\n"+
-                            "Device type : "+type;
+                            "Name : " + name + "\n" +
+                            "Alias : " + alias + "\n" +
+                            "Mac address : " + macAddr + "\n" +
+                            "Device type : " + type;
                     //affichage infos sur l'écran
                     Toast toast = Toast.makeText(getApplicationContext(), toastText, Toast.LENGTH_LONG);
                     toast.show();
@@ -658,7 +548,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             });
             //https://stackoverflow.com/questions/8933515/android-button-created-in-run-time-to-match-parent-in-java
             listView.addHeaderView(button);
-            listView.setAdapter(new ArrayAdapter(getBaseContext(),R.layout.test));
+            listView.setAdapter(new ArrayAdapter(getBaseContext(), R.layout.test));
         }
     }
 
@@ -666,7 +556,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         for (int i = 0; i < locationKeys.size(); i++) {
             String loopKey = locationKeys.get(i).key;
-            dbRef = dbRootNode.getReference("locations/" + loopKey);
+            String loopPath = "accounts/" + currentUserKey + "/locations/" + loopKey;
+            dbRef = dbRootNode.getReference(loopPath);
 
             dbRef.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
                 @Override
@@ -674,12 +565,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     if (!task.isSuccessful()) {
                         Log.e("firebase", "Error getting data", task.getException());
                     } else {
-                        for (DataSnapshot d: task.getResult().getChildren()) {
+                        for (DataSnapshot d : task.getResult().getChildren()) {
 
-                            if (d.getKey().equals(deviceHardwareAddress) && !loopKey.equals(currentKey)) {
+                            if (d.getKey().equals(deviceHardwareAddress) && !loopKey.equals(currentUserLocationKey)) {
                                 d.getRef().removeValue();
                                 Log.d("firebase MAC addr", "Removing device " + deviceHardwareAddress + " from location " + loopKey +
-                                        "\nTrue key = " + currentKey);
+                                        "\nTrue key = " + currentUserLocationKey);
 
                             }
                         }
@@ -689,37 +580,35 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
-    private int handleFirstLocation(Location location)
-    {
+    private int handleFirstLocation(Location location) {
         double longitude = location.getLongitude();
         double latitude = location.getLatitude();
-//       result = false;
+
         dbRef = dbRootNode.getReference("accounts/" + currentUserKey + "/locations");
+        Log.d("handleFirstLocation", currentUserKey);
         dbRef.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DataSnapshot> task) {
                 if (!task.isSuccessful()) {
                     Log.e("firebase", "Error getting data", task.getException());
-                }
-                else {
+                } else {
                     boolean isInBd = false;
-                    for (DataSnapshot d: task.getResult().getChildren()) {
+                    for (DataSnapshot d : task.getResult().getChildren()) {
                         double loop_longitude = (double) d.child("longitude").getValue();
                         double loop_latitude = (double) d.child("latitude").getValue();
-                        if (!isDistantEnough(loop_longitude, longitude) && !isDistantEnough(loop_latitude, latitude))
-                        {
-                            currentKey = d.getKey();
+                        if (!isDistantEnough(loop_longitude, longitude) && !isDistantEnough(loop_latitude, latitude)) {
+                            currentUserLocationKey = d.getKey();
                             isInBd = true;
                         }
 
                     }
 
-                    if (!isInBd)
-                    {
-                        dbRef = dbRootNode.getReference("locations").push();
+                    if (!isInBd) {
+                        Log.d("handleFirstLocation", currentUserKey);
+                        dbRef = dbRootNode.getReference("accounts/" + currentUserKey + "/locations").push();
                         String locationKey = dbRef.getKey();
                         Log.d("locationkey", locationKey);
-                        currentKey = locationKey;
+                        currentUserLocationKey = locationKey;
                         locationKeys.add(new LocationKey(locationKey, latitude, longitude));
                         dbRef.child("latitude").setValue(latitude);
                         dbRef.child("longitude").setValue(longitude);
@@ -735,8 +624,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         return 0;
     }
 
-    private void shareDevice(Device device)
-    {
+    private void shareDevice(Device device) {
         Intent send = new Intent();
         String deviceName = device.name;
         String deviceAlias = device.alias;
@@ -751,10 +639,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         startActivity(share);
     }
 
-    private void addToFavorites(Device device)
-    {
+    private void addToFavorites(Device device) {
         favoritesList.add(device.mac_addr);
-        dbRef = dbRootNode.getReference("favorites");
+        String userFavoritesPath = "accounts/" + currentUserKey + "/favorites";
+        dbRef = dbRootNode.getReference(userFavoritesPath);
 
         dbRef.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
             @Override
@@ -771,21 +659,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
-    private void removeFromFavorites(Device device)
-    {
+    private void removeFromFavorites(Device device) {
         favoritesList.remove(device.mac_addr);
-        dbRef = dbRootNode.getReference("favorites");
+        String userFavoritesPath = "accounts/" + currentUserKey + "/favorites";
+        dbRef = dbRootNode.getReference(userFavoritesPath);
         dbRef.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DataSnapshot> task) {
                 if (!task.isSuccessful()) {
                     Log.e("firebase", "Error getting data", task.getException());
-                }
-                else {
-                    for (DataSnapshot d: task.getResult().getChildren()) {
+                } else {
+                    for (DataSnapshot d : task.getResult().getChildren()) {
 
-                        if (d.getKey().equals(device.mac_addr))
-                        {
+                        if (d.getKey().equals(device.mac_addr)) {
                             d.getRef().removeValue();
                         }
 
@@ -800,8 +686,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         //propositions de fonctionnalités
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MapsActivity.this);
         alertDialogBuilder.setTitle("Fonctionnalités : \n");
-        if (favoritesList.contains(discoveredDevice.mac_addr))
-        {
+        if (favoritesList.contains(discoveredDevice.mac_addr)) {
             //on ne considère pas ici la fonctionnalité "comment y aller" comme nous sommes déjà à l'emplacement
             alertDialogBuilder.setItems(new CharSequence[]
                             {"Retirer des favoris", "Partager"},
@@ -810,7 +695,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         public void onClick(DialogInterface dialog, int which) {
                             switch (which) {
                                 case 0: //retirer des favoris
-                                    String newText = String.valueOf(button.getText()).replaceFirst("\\*","");
+                                    String newText = String.valueOf(button.getText()).replaceFirst("\\*", "");
                                     button.setText(newText);
                                     removeFromFavorites(discoveredDevice);
                                     break;
@@ -820,10 +705,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             }
                         }
                     });
-        }
-
-        else
-        {
+        } else {
             //on ne considère pas ici la fonctionnalité "comment y aller" comme nous sommes déjà à l'emplacement
             alertDialogBuilder.setItems(new CharSequence[]
                             {"Ajouter aux favoris", "Partager"},
@@ -855,8 +737,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         //propositions de fonctionnalités
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MapsActivity.this);
         alertDialogBuilder.setTitle("Fonctionnalités : \n");
-        if (favoritesList.contains(discoveredDevice.mac_addr))
-        {
+        if (favoritesList.contains(discoveredDevice.mac_addr)) {
             alertDialogBuilder.setItems(new CharSequence[]
                             {"Retirer des favoris", "Partager", "Comment y aller"},
                     new DialogInterface.OnClickListener() {
@@ -864,7 +745,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         public void onClick(DialogInterface dialog, int which) {
                             switch (which) {
                                 case 0: //retirer des favoris
-                                    String newText = String.valueOf(button.getText()).replaceFirst("\\*","");
+                                    String newText = String.valueOf(button.getText()).replaceFirst("\\*", "");
                                     button.setText(newText);
                                     removeFromFavorites(discoveredDevice);
                                     break;
@@ -877,10 +758,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             }
                         }
                     });
-        }
-
-        else
-        {
+        } else {
             //on ne considère pas ici la fonctionnalité "comment y aller" comme nous sommes déjà à l'emplacement
             alertDialogBuilder.setItems(new CharSequence[]
                             {"Ajouter aux favoris", "Partager", "Comment y aller"},
@@ -918,14 +796,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public void onComplete(@NonNull Task<DataSnapshot> task) {
                 if (!task.isSuccessful()) {
                     Log.e("firebase", "Error getting data", task.getException());
-                }
-                else {
+                } else {
                     // Load all location keys for current user
-                    for (DataSnapshot d: task.getResult().getChildren()) {
+                    for (DataSnapshot d : task.getResult().getChildren()) {
                         Log.d("firebase location key", d.getKey());
                         double loop_longitude = (double) d.child("longitude").getValue();
                         double loop_latitude = (double) d.child("latitude").getValue();
-                        locationKeys.add(new LocationKey(d.getKey(),loop_latitude,loop_longitude));
+                        locationKeys.add(new LocationKey(d.getKey(), loop_latitude, loop_longitude));
 
                     }
                 }
@@ -941,8 +818,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         public void onComplete(@NonNull Task<DataSnapshot> task) {
                             if (!task.isSuccessful()) {
                                 Log.e("firebase", "Error getting data", task.getException());
-                            }
-                            else {
+                            } else {
 //                                double latitude = (double) task.getResult().child("latitude").getValue();
 //                                double longitude = (double) task.getResult().child("longitude").getValue();
                                 LatLng test1 = new LatLng(latitude, longitude);
@@ -958,12 +834,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
 
-
-
     private void getAllInitFavorites() {
 
-
-        dbRef = dbRootNode.getReference();
+        String userFavoritesPath = "accounts/" + currentUserKey + "/favorites";
+        dbRef = dbRootNode.getReference(userFavoritesPath);
         dbRef.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
             @RequiresApi(api = Build.VERSION_CODES.N)
             @Override
@@ -971,11 +845,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 if (!task.isSuccessful()) {
                     Log.e("firebase", "Error getting data", task.getException());
                 } else {
-                    DataSnapshot result = task.getResult();
-                    DataSnapshot favChildren = result.child("favorites");
-                    for (DataSnapshot d_fav: favChildren.getChildren())
-                    {
-                        favoritesList.add(d_fav.getKey());
+                    for (DataSnapshot d: task.getResult().getChildren()) {
+                        favoritesList.add(d.getKey());
                     }
                 }
             }
@@ -1019,11 +890,63 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         currentUserKey = dbRef.getKey();
                         dbRef.child("username").setValue(currentUsername);
                     }
+
+                    // Handle current user's locations and favorite devices
+                    getAllInitLocationKeys();
+                    getAllInitFavorites();
+
+                    handleMFusedLocationClient();
                 }
+
             }
         });
     }
 
+    private void handleMFusedLocationClient() {
+        // nécessité de demander l'autorisation pour l'accès aux localisations
+        int permissionCheck1 = ContextCompat.checkSelfPermission(getBaseContext(), Manifest.permission.ACCESS_COARSE_LOCATION);
+        int permissionCheck2 = ContextCompat.checkSelfPermission(getBaseContext(), Manifest.permission.ACCESS_FINE_LOCATION);
+
+        if (permissionCheck1 != PackageManager.PERMISSION_GRANTED || permissionCheck2 != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(MapsActivity.this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, 2);
+        }
+
+        mFusedLocationClient.getLastLocation().addOnSuccessListener(
+                new OnSuccessListener<Location>() {
+                    @RequiresApi(api = Build.VERSION_CODES.N)
+                    @Override
+                    public void onSuccess(Location location) {
+                        if (location != null) {
+                            double latitude = location.getLatitude();
+                            double longitude = location.getLongitude();
+
+                            if (mLastLocation == null || isDistantEnough(latitude, mLastLocation.getLatitude())
+                                    || isDistantEnough(longitude, mLastLocation.getLongitude())) {
+
+                                Log.d("nearby device", "onSuccess 1st location");
+
+                                mLastLocation = location;
+
+                                // RESET EVERTYHING
+                                nearbyDevices = new ArrayList<Device>();
+                                handleFirstLocation(location);
+
+                                LatLng test = new LatLng(latitude, longitude);
+                                currentPosMarker = mMap.addMarker(new MarkerOptions().position(test).icon(BitmapDescriptorFactory.fromResource(R.drawable.stickman)).title("CurrentPosition"));
+
+                                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(test, 15));
+
+                            }
+
+                            String time = String.valueOf(mLastLocation.getTime());
+
+                        } else {
+                            Log.d("location", "no location found");
+                        }
+                    }
+                });
+        mFusedLocationClient.getLastLocation();
+    }
 
 
 
