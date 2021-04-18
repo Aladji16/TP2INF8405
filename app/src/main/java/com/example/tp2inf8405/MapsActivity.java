@@ -23,7 +23,10 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.location.Location;
 import android.location.LocationManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkCapabilities;
 import android.net.Uri;
+import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -91,6 +94,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private Marker currentPosMarker;
     private FusedLocationProviderClient mFusedLocationClient;
+    private Handler handler = new Handler();
+    private Runnable usageUpdate;
+
 
     private String currentUserLocationKey;
     private String currentUserKey;
@@ -430,6 +436,24 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         super.onDestroy();
         // Don't forget to unregister the ACTION_FOUND receiver.
         unregisterReceiver(receiver);
+    }
+
+    @Override
+    protected void onResume() {
+        handler.postDelayed(usageUpdate = new Runnable() {
+            @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+            public void run() {
+                updateUsage(getApplicationContext());
+                handler.postDelayed(usageUpdate, 30*1000);
+            }
+        }, 30*1000);
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        handler.removeCallbacks(usageUpdate);
+        super.onPause();
     }
 
 
@@ -948,6 +972,38 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 startActivity(toProfileIntent);
             }
         });
+    }
+
+
+
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    public void updateUsage(Context context) {
+        Log.d("update","update");
+        int check = ContextCompat.checkSelfPermission(getBaseContext(), Manifest.permission.ACCESS_NETWORK_STATE);
+        if (check != PackageManager.PERMISSION_GRANTED)
+        {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_NETWORK_STATE}, 2);
+        }
+        ConnectivityManager man = (ConnectivityManager)this.getSystemService(CONNECTIVITY_SERVICE);
+        NetworkCapabilities cap = null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            cap = man.getNetworkCapabilities(man.getActiveNetwork());
+        }
+        double downlink = cap.getLinkDownstreamBandwidthKbps();
+        double uplink = cap.getLinkUpstreamBandwidthKbps();
+        //https://developer.android.com/training/monitoring-device-state/battery-monitoring#CurrentLevel
+        IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
+        Intent batteryStatus = context.registerReceiver(null, ifilter);
+        float battery = batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) * 100 /
+                batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
+        TextView bat = findViewById(R.id.BatteryLevel);
+        TextView up = findViewById(R.id.UplinkVal);
+        TextView down = findViewById(R.id.DownlinkVal);
+        bat.setText(getString(R.string.batteryLevel)+" "+String.valueOf(battery)+"%");
+        up.setText(getString(R.string.UplinkVal)+" "+String.valueOf(uplink)+" kbps");
+        down.setText(getString(R.string.DownlinkVal)+" "+String.valueOf(downlink)+" kbps");
+
+
     }
 
 
