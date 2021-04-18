@@ -16,6 +16,10 @@
     <string name="previous">Previous</string>
     <string name="profileBtn">Profile</string>
     <string name="swapThemeBtn">Swap Theme</string>
+    <string name="userNotInDB">This user does not exist.</string>
+    <string name="userAlreadyInDB">This user already exists. Please choose another name.</string>
+    <string name="profileUsername">Nom d\'utilisateur: </string>
+    <string name="configChangePFP">Changer la photo de profil</string>
 
     <string name="hello_first_fragment">Hello first fragment</string>
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>

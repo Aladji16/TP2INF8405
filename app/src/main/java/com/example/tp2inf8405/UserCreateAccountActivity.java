@@ -7,10 +7,12 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.hardware.Camera;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -30,6 +32,8 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.io.ByteArrayOutputStream;
+
 import static com.example.tp2inf8405.UserFirstPageActivity.namesInDB;
 
 public class UserCreateAccountActivity extends AppCompatActivity {
@@ -45,7 +49,6 @@ public class UserCreateAccountActivity extends AppCompatActivity {
         setContentView(R.layout.activity_create_account);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
-        ImageView profilePicture = (ImageView) findViewById(R.id.profilePicture);
         Button validateUsername = (Button) findViewById(R.id.validate_username);
         Button changePicture = (Button) findViewById(R.id.change_pfp);
 
@@ -56,8 +59,7 @@ public class UserCreateAccountActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 int permissionCheck1 = ContextCompat.checkSelfPermission(UserCreateAccountActivity.this, Manifest.permission.CAMERA);
-                if (permissionCheck1 != PackageManager.PERMISSION_GRANTED)
-                {
+                if (permissionCheck1 != PackageManager.PERMISSION_GRANTED) {
                     ActivityCompat.requestPermissions(UserCreateAccountActivity.this, new String[]{Manifest.permission.CAMERA}, PERMISSION_REQUEST_CODE);
                 }
 
@@ -77,18 +79,29 @@ public class UserCreateAccountActivity extends AppCompatActivity {
                 {
                     if (namesInDB.contains(inputText))
                     {
-                        String toastText = "Ce nom existe déjà; veuillez en choisir un autre.";
+                        String toastText = getString(R.string.userAlreadyInDB);
                         Toast toast = Toast.makeText(getApplicationContext(), toastText, Toast.LENGTH_LONG);
                         toast.show();
                     }
 
                     else
                     {
-
+                        // Creer le user
                         namesInDB.add(inputText);
                         dbRef = dbRootNode.getReference("accounts").push();
-                        dbRef.child(inputText).child("username").setValue(inputText);
-                        //TODO : envoyer l'image à la base de données
+                        dbRef.child("username").setValue(inputText);
+                        // Envoyer photo de profil à la base de données
+                        ImageView profilePicture = (ImageView) findViewById(R.id.profilePicture);
+                        Bitmap bitmap = ((BitmapDrawable) profilePicture.getDrawable()).getBitmap();
+                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                        bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
+                        String b64profilePicture = Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT);
+                        dbRef.child("profilePicture").setValue(b64profilePicture);
+
+                        // Ramener vers le login
+                        Intent backToLoginIntent = new Intent(getApplicationContext(), UserFirstPageActivity.class);
+                        backToLoginIntent.putExtra("newAccountUsername", inputText);
+                        startActivity(backToLoginIntent);
                     }
                 }
             }
@@ -152,6 +165,7 @@ public class UserCreateAccountActivity extends AppCompatActivity {
         // Other 'case' lines to check for other
         // permissions this app might request.
     }
+
 }
 
 

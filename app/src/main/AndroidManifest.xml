@@ -24,7 +24,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.TP2INF8405">
-        <activity android:name=".UserProfileActivity"></activity>
+        <activity
+            android:name=".UserProfileActivity"
+            android:screenOrientation="landscape"></activity>
         <activity
             android:name=".SplashActivity"
             android:screenOrientation="landscape"

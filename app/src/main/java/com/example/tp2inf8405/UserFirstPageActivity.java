@@ -26,10 +26,18 @@ public class UserFirstPageActivity extends AppCompatActivity {
     private DatabaseReference dbRef = dbRootNode.getReference();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        getAllInitNamesInDB();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_first_page);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+
+        // If user comes back from creating an account
+        String newAccountUsername = getIntent().getStringExtra("newAccountUsername");
+        if (newAccountUsername != null) {
+            TextInputEditText userInput = (TextInputEditText) findViewById(R.id.username_input);
+            userInput.setText(newAccountUsername);
+        } else {
+            getAllInitNamesInDB();
+        }
 
         Button createAccountButton = (Button) findViewById(R.id.createAccountButton);
         Button loginButton = (Button) findViewById(R.id.loginButton);
@@ -39,9 +47,15 @@ public class UserFirstPageActivity extends AppCompatActivity {
                 TextInputEditText userInput = (TextInputEditText) findViewById(R.id.username_input);
                 String inputText = String.valueOf(userInput.getText());
                 if (!inputText.equals("")) {
-                    Intent toMapsIntent = new Intent(getApplicationContext(), MapsActivity.class);
-                    toMapsIntent.putExtra("username", inputText);
-                    startActivity(toMapsIntent);
+                    if (!namesInDB.contains(inputText)) {
+                        String userNotInDBMsg = getString(R.string.userNotInDB);
+                        Toast toast = Toast.makeText(getApplicationContext(), "Username: " + userNotInDBMsg, Toast.LENGTH_LONG);
+                        toast.show();
+                    } else {
+                        Intent toMapsIntent = new Intent(getApplicationContext(), MapsActivity.class);
+                        toMapsIntent.putExtra("username", inputText);
+                        startActivity(toMapsIntent);
+                    }
                 }
             }
         });
@@ -68,7 +82,7 @@ public class UserFirstPageActivity extends AppCompatActivity {
                 } else {
                     for (DataSnapshot d: task.getResult().getChildren())
                     {
-                        namesInDB.add(d.getKey());
+                        namesInDB.add(d.child("username").getValue().toString());
                     }
                 }
             }
