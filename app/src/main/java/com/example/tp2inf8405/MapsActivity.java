@@ -339,8 +339,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             } else if (BluetoothDevice.ACTION_FOUND.equals(action)) {
 
-//                Log.d("nearby device", "action found");
-
                 currentDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 String deviceName = currentDevice.getName();
                 if (deviceName == null) {
@@ -371,10 +369,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
                 String deviceHardwareAddress = currentDevice.getAddress(); // MAC address
-
                 updateDeviceLocation(deviceHardwareAddress);
                 String userLocationKeyPath = "accounts/" + currentUserKey + "/locations/" + currentUserLocationKey;
-
                 dbRef = dbRootNode.getReference(userLocationKeyPath);
 
                 String finalDeviceName = deviceName;
@@ -486,10 +482,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         ListView listView = findViewById(R.id.listView);
 
         boolean contains = false;
-        //le code en dessous ne fonctionne pas
-//        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-//            contains = nearbyDevices.stream().filter(device -> device.mac_addr.equals(macAddr)).findFirst().orElse(null) != null;
-//        }
         int i = 0;
         if (!nearbyDevices.isEmpty()) {
             while (i < nearbyDevices.size() && !contains) {
@@ -553,7 +545,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 d.getRef().removeValue();
                                 Log.d("firebase MAC addr", "Removing device " + deviceHardwareAddress + " from location " + loopKey +
                                         "\nTrue key = " + currentUserLocationKey);
-
                             }
                         }
                     }
@@ -802,11 +793,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             if (!task.isSuccessful()) {
                                 Log.e("firebase", "Error getting data", task.getException());
                             } else {
-//                                double latitude = (double) task.getResult().child("latitude").getValue();
-//                                double longitude = (double) task.getResult().child("longitude").getValue();
                                 LatLng test1 = new LatLng(latitude, longitude);
                                 mMap.addMarker(new MarkerOptions().position(test1).icon(BitmapDescriptorFactory.fromResource(R.drawable.epingler)).title("Devices found in lat " + String.valueOf(latitude) + " and longitude " + String.valueOf(longitude)));
-
                             }
                         }
 
@@ -912,9 +900,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(test, 15));
 
                             }
-
                             String time = String.valueOf(mLastLocation.getTime());
-
                         } else {
                             Log.d("location", "no location found");
                         }
