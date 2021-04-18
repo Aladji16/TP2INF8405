@@ -978,7 +978,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     public void updateUsage(Context context) {
-        Log.d("update","update");
         int check = ContextCompat.checkSelfPermission(getBaseContext(), Manifest.permission.ACCESS_NETWORK_STATE);
         if (check != PackageManager.PERMISSION_GRANTED)
         {
