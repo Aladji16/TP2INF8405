@@ -127,6 +127,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         super.onCreate(savedInstanceState);
         setContentView(R.layout.test);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+
+        String currentUsername = getIntent().getStringExtra("username");
+        Toast toast = Toast.makeText(getApplicationContext(), "Username: " + currentUsername, Toast.LENGTH_LONG);
+        toast.show();
+
         Button btn = findViewById(R.id.btn);
         ConstraintLayout container = (ConstraintLayout) findViewById(R.id.mainView);
 
