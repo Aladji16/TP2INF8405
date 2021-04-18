@@ -19,6 +19,9 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkCapabilities;
+import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
@@ -485,4 +488,24 @@ public void getDirection(double latitude, double longitude) {
     Intent mapIntent = new Intent(Intent.ACTION_VIEW, route);
     mapIntent.setPackage("com.google.android.apps.maps");
     startActivity(mapIntent);
+}
+
+public void updateUsage(Context context) {
+    int check = ContextCompat.checkSelfPermission(getBaseContext(), Manifest.permission.ACCESS_NETWORK_STATE);
+    if (check != PackageManager.PERMISSION_GRANTED)
+    {
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_NETWORK_STATE}, 2);
+    }
+    ConnectivityManager man = (ConnectivityManager)this.getSystemService(CONNECTIVITY_SERVICE);
+    NetworkCapabilities cap = man.getNetworkCapabilities(man.getActiveNetwork());
+    double downlink = cap.getLinkDownstreamBandwidthKbps();
+    double uplink = cap.getLinkUpstreamBandwidthKbps();
+    //https://developer.android.com/training/monitoring-device-state/battery-monitoring#CurrentLevel
+    IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
+    Intent batteryStatus = context.registerReceiver(null, ifilter);
+    double battery = batteryStatus.getDoubleExtra(BatteryManager.EXTRA_LEVEL, -1) * 100 /
+            batteryStatus.getDoubleExtra(BatteryManager.EXTRA_SCALE, -1);
+
+
+
 }
