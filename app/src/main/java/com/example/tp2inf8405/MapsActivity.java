@@ -37,6 +37,7 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.PopupWindow;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -242,8 +243,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                     LayoutInflater inflater = (LayoutInflater) MapsActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                                     View popupLayout = inflater.inflate(R.layout.popup_layout, null, false);
                                     ListView popupListView = popupLayout.findViewById(R.id.popup_listView);
-                                    FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) popupListView.getLayoutParams();
-                                    params.height = FrameLayout.LayoutParams.MATCH_PARENT;
+                                    TextView foundDevicesTextView = popupLayout.findViewById(R.id.textView);
+                                    foundDevicesTextView.setText(foundDevicesTextView.getText()+"\nlongitude: "+ clicked_longitude+"\nlatitude: "+clicked_latitude);
+//                                    FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) popupListView.getLayoutParams();
+//                                    params.height = FrameLayout.LayoutParams.MATCH_PARENT;
 
                                     for (DataSnapshot d : task.getResult().getChildren()) {
                                         if (!d.getKey().equals("latitude") && !d.getKey().equals("longitude")) {
@@ -286,10 +289,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                             });
 
                                             popupListView.addHeaderView(button);
-                                            popupListView.setAdapter(new ArrayAdapter(getBaseContext(), R.layout.test));
+//                                            popupListView.setAdapter(new ArrayAdapter(getBaseContext(), R.layout.test));
 
                                         }
                                     }
+                                    popupListView.setAdapter(new ArrayAdapter(getBaseContext(), R.layout.test));
 
                                     final PopupWindow popupWindow = new PopupWindow(popupLayout, FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT);
 
@@ -305,7 +309,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                         }
                                     });
                                     popupWindow.setOutsideTouchable(true);
-                                    popupWindow.showAtLocation(findViewById(R.id.mainView), Gravity.CENTER, -50, 0);
+                                    popupWindow.showAtLocation(findViewById(R.id.mainView), Gravity.NO_GRAVITY, 500, 100);
 
                                 }
                             }
@@ -313,7 +317,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     });
                 }
             }
-            return false; //comportement par défaut, afficher le titre de l'épingle
+            return true; //n'affiche pas le titre de l'épingle
         }
     };
 
@@ -852,6 +856,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         }
                     }
 
+                    Log.d("currentuserkey", currentUserKey);
                     // Handle current user's locations and favorite devices
                     getAllInitLocationKeys();
                     getAllInitFavorites();
