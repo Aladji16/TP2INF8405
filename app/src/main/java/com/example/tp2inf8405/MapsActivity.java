@@ -751,7 +751,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private void addToFavorites(Device device)
     {
         favoritesList.add(device.mac_addr);
-        dbRef = dbRootNode.getReference("favorites").push();
+        dbRef = dbRootNode.getReference("favorites");
 
         dbRef.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
             @Override
@@ -780,13 +780,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 }
                 else {
                     for (DataSnapshot d: task.getResult().getChildren()) {
-                        for (DataSnapshot d_: d.getChildren())
-                        {
-                            if (d_.getKey().equals(device.mac_addr))
+
+                            if (d.getKey().equals(device.mac_addr))
                             {
                                 d.getRef().removeValue();
                             }
-                        }
 
                     }
                 }
@@ -972,10 +970,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     DataSnapshot favChildren = result.child("favorites");
                     for (DataSnapshot d_fav: favChildren.getChildren())
                     {
-                        for (DataSnapshot d_fav_1: d_fav.getChildren())
-                        {
-                            favoritesList.add(d_fav_1.getKey());
-                        }
+                            favoritesList.add(d_fav.getKey());
                     }
                 }
             }
