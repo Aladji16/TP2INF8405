@@ -246,8 +246,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     double long_loop = locationKeys.get(i).longitude;
                     double lat_loop = locationKeys.get(i).latitude;
 
-
-                    dbRef = dbRootNode.getReference("locations/" + loopKey);
+                    String loopPath = "accounts/" + currentUserKey + "/locations/" + loopKey;
+                    dbRef = dbRootNode.getReference(loopPath);
                     dbRef.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
                         @Override
                         public void onComplete(@NonNull Task<DataSnapshot> task) {
@@ -812,7 +812,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     String loopKey = locationKeys.get(i).key;
                     double latitude = locationKeys.get(i).latitude;
                     double longitude = locationKeys.get(i).longitude;
-                    dbRef = dbRootNode.getReference("locations/" + loopKey);
+                    String loopPath = "accounts/" + currentUserKey + "/locations/" + loopKey;
+                    dbRef = dbRootNode.getReference(loopPath);
                     dbRef.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
                         @Override
                         public void onComplete(@NonNull Task<DataSnapshot> task) {
