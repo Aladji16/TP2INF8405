@@ -846,8 +846,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     // Fetches all usernames from DB
-    // If match, refer to the associated account key
-    // Otherwise create new account for user
+    // On suppose avec UserCreateAccount que l'user est déjà dans la BD
     private void handleCurrentUsername() {
         dbRef = dbRootNode.getReference("accounts");
         dbRef.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
@@ -856,25 +855,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 if (!task.isSuccessful()) {
                     Log.e("firebase", "Error getting data", task.getException());
                 } else {
-                    boolean isUserInBD = false;
                     for (DataSnapshot d: task.getResult().getChildren()) {
                         String snapShotUsername = d.child("username").getValue().toString();
                         Log.d("currentUsername", snapShotUsername);
                         if (snapShotUsername.equals(currentUsername)) {
                             // REFERER A CE USER
                             currentUserKey = d.getKey();
-                            isUserInBD = true;
                         }
-                    }
-
-                    if (!isUserInBD) {
-                        // CREER LE NOUVEAU USER
-                        dbRef = dbRootNode.getReference("accounts").push();
-                        currentUserKey = dbRef.getKey();
-                        dbRef.child("username").setValue(currentUsername);
-
-                        // TODO: Set B64 encoded image from default_profile PNG in our drawables
-                        // dbRef.child("profilePicture").setValue()
                     }
 
                     // Handle current user's locations and favorite devices
