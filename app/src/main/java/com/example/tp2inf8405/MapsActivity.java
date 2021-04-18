@@ -86,6 +86,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private BluetoothDevice currentDevice;
     private FirebaseDatabase dbRootNode = FirebaseDatabase.getInstance();
     private DatabaseReference dbRef = dbRootNode.getReference();
+    private String currentUsername;
+
     private List<LocationKey> locationKeys = new ArrayList<LocationKey>();
     private ArrayList<String> favoritesList = new ArrayList<String>();
 
@@ -98,12 +100,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private List<Device> nearbyDevices = new ArrayList<Device>();
 
-    private boolean firstLocationisInBD = false;
-
     private Marker currentPosMarker;
     private FusedLocationProviderClient mFusedLocationClient;
 
-    private String currentKey;
+    private String currentKey; // TODO: Remplacer avec currentUserKey et delete celui-ci
+    private String currentUserKey;
 
     boolean isDarkMode = false;
 
@@ -118,19 +119,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 //        https://www.geeksforgeeks.org/android-how-to-request-permissions-in-android-application/
 //        action_state_changed https://www.programcreek.com/java-api-examples/?class=android.bluetooth.BluetoothAdapter&method=ACTION_STATE_CHANGED
 
-        //        Get all locationIDs already in Firebase DB
-        getAllInitLocationKeys();
-        getAllInitFavorites();
-
-
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.test);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
-        String currentUsername = getIntent().getStringExtra("username");
-        Toast toast = Toast.makeText(getApplicationContext(), "Username: " + currentUsername, Toast.LENGTH_LONG);
-        toast.show();
+        // Receive username from textInput on UserFirstPageActivity
+        currentUsername = getIntent().getStringExtra("username");
+        handleCurrentUsername();
+        getAllInitLocationKeys();
+        getAllInitFavorites();
 
         Button btn = findViewById(R.id.btn);
         ConstraintLayout container = (ConstraintLayout) findViewById(R.id.mainView);
@@ -696,7 +694,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         double longitude = location.getLongitude();
         double latitude = location.getLatitude();
 //       result = false;
-        dbRef = dbRootNode.getReference("locations");
+        dbRef = dbRootNode.getReference("accounts/" + currentUserKey + "/locations");
         dbRef.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DataSnapshot> task) {
@@ -914,7 +912,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
     private void getAllInitLocationKeys() {
-        dbRef = dbRootNode.getReference("locations");
+        dbRef = dbRootNode.getReference("accounts/" + currentUserKey + "/locations");
         dbRef.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DataSnapshot> task) {
@@ -922,6 +920,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     Log.e("firebase", "Error getting data", task.getException());
                 }
                 else {
+                    // Load all location keys for current user
                     for (DataSnapshot d: task.getResult().getChildren()) {
                         Log.d("firebase location key", d.getKey());
                         double loop_longitude = (double) d.child("longitude").getValue();
@@ -931,6 +930,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     }
                 }
 
+                // Add marker position on maps
                 for (int i = 0; i < locationKeys.size(); i++) {
                     String loopKey = locationKeys.get(i).key;
                     double latitude = locationKeys.get(i).latitude;
@@ -989,6 +989,39 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         Intent mapIntent = new Intent(Intent.ACTION_VIEW, route);
         mapIntent.setPackage("com.google.android.apps.maps");
         startActivity(mapIntent);
+    }
+
+    // Fetches all usernames from DB
+    // If match, refer to the associated account key
+    // Otherwise create new account for user
+    private void handleCurrentUsername() {
+        dbRef = dbRootNode.getReference("accounts");
+        dbRef.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DataSnapshot> task) {
+                if (!task.isSuccessful()) {
+                    Log.e("firebase", "Error getting data", task.getException());
+                } else {
+                    boolean isUserInBD = false;
+                    for (DataSnapshot d: task.getResult().getChildren()) {
+                        String snapShotUsername = d.child("username").getValue().toString();
+                        Log.d("currentUsername", snapShotUsername);
+                        if (snapShotUsername.equals(currentUsername)) {
+                            // REFERER A CE USER
+                            currentUserKey = d.getKey();
+                            isUserInBD = true;
+                        }
+                    }
+
+                    if (!isUserInBD) {
+                        // CREER LE NOUVEAU USER
+                        dbRef = dbRootNode.getReference("accounts").push();
+                        currentUserKey = dbRef.getKey();
+                        dbRef.child("username").setValue(currentUsername);
+                    }
+                }
+            }
+        });
     }
 
 
