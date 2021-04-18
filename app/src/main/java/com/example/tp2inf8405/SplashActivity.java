@@ -27,8 +27,8 @@ public class SplashActivity extends AppCompatActivity {
         handler = new Handler();
         handler.postDelayed(() -> {
             mp.stop();
-            Intent mapIntent = new Intent(getApplicationContext(), MapsActivity.class);
-            startActivity(mapIntent);
+            Intent userFirstPageIntent = new Intent(getApplicationContext(), UserFirstPageActivity.class);
+            startActivity(userFirstPageIntent);
             finish();
         },3000);
     }

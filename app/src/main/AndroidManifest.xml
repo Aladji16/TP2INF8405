@@ -9,6 +9,13 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="true" />
 
     <application
         android:allowBackup="true"
@@ -17,7 +24,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.TP2INF8405">
-        <activity android:name=".SplashActivity"
+
+        <activity
+            android:name=".SplashActivity"
             android:screenOrientation="landscape"
             android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
             <intent-filter>
@@ -25,6 +34,27 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+        <activity
+            android:name=".UserFirstPageActivity"
+            android:screenOrientation="landscape">
+
+        </activity>
+        <activity
+            android:name=".UserCreateAccountActivity"
+            android:screenOrientation="landscape"
+            android:parentActivityName=".UserFirstPageActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".UserFirstPageActivity"/>
+        </activity>
+        <activity
+            android:name=".UserProfileActivity"
+            android:screenOrientation="landscape"
+            android:parentActivityName=".MapsActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MapsActivity"/>
         </activity>
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
@@ -40,13 +70,14 @@
 
         <activity
             android:name=".MapsActivity"
+            android:label="@string/title_activity_maps"
             android:screenOrientation="landscape"
             android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
-            android:label="@string/title_activity_maps">
+            android:parentActivityName=".UserFirstPageActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".UserFirstPageActivity"/>
 
-            <!-- <intent-filter> -->
-            <!-- <action android:name="android.intent.action.MAIN" /> -->
-            <!-- </intent-filter> -->
         </activity>
     </application>
 
