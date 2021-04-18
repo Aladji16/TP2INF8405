@@ -325,27 +325,27 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             LatLng clicked_position = marker.getPosition();
             double clicked_latitude = clicked_position.latitude;
             double clicked_longitude = clicked_position.longitude;
-            
+
 
             LatLng currentPos = currentPosMarker.getPosition();
             if (isDistantEnough(clicked_latitude, currentPos.latitude) || isDistantEnough(clicked_longitude,currentPos.longitude))
             {
                 for (int i = 0; i < locationKeys.size(); i++) {
-                String loopKey = locationKeys.get(i).key;
-                double long_loop = locationKeys.get(i).longitude;
-                double lat_loop = locationKeys.get(i).latitude;
+                    String loopKey = locationKeys.get(i).key;
+                    double long_loop = locationKeys.get(i).longitude;
+                    double lat_loop = locationKeys.get(i).latitude;
 
 
                     dbRef = dbRootNode.getReference("locations/" + loopKey);
-                dbRef.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DataSnapshot> task) {
-                        if (!task.isSuccessful()) {
-                            Log.e("firebase", "Error getting data", task.getException());
-                        }
-                        else {
-                            if (!isDistantEnough(clicked_latitude, lat_loop) && !isDistantEnough(clicked_longitude, long_loop))
-                            {
+                    dbRef.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<DataSnapshot> task) {
+                            if (!task.isSuccessful()) {
+                                Log.e("firebase", "Error getting data", task.getException());
+                            }
+                            else {
+                                if (!isDistantEnough(clicked_latitude, lat_loop) && !isDistantEnough(clicked_longitude, long_loop))
+                                {
                                     String mac_addr = "", name = "", alias = "", type = "";
 
                                     LayoutInflater inflater = (LayoutInflater) MapsActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -403,21 +403,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                         }
                                     }
 
-                                final PopupWindow popupWindow = new PopupWindow(popupLayout, FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT);
+                                    final PopupWindow popupWindow = new PopupWindow(popupLayout, FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT);
 
-                                //Set up touch closing outside of pop-up
-                                popupWindow.setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
-                                popupWindow.setTouchInterceptor(new View.OnTouchListener() {
-                                    public boolean onTouch(View v, MotionEvent event) {
-                                        if(event.getAction() == MotionEvent.ACTION_OUTSIDE) {
-                                            popupWindow.dismiss();
-                                            return true;
+                                    //Set up touch closing outside of pop-up
+                                    popupWindow.setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
+                                    popupWindow.setTouchInterceptor(new View.OnTouchListener() {
+                                        public boolean onTouch(View v, MotionEvent event) {
+                                            if(event.getAction() == MotionEvent.ACTION_OUTSIDE) {
+                                                popupWindow.dismiss();
+                                                return true;
+                                            }
+                                            return false;
                                         }
-                                        return false;
-                                    }
-                                });
-                                popupWindow.setOutsideTouchable(true);
-                                popupWindow.showAtLocation(findViewById(R.id.mainView), Gravity.CENTER, -50, 0);
+                                    });
+                                    popupWindow.setOutsideTouchable(true);
+                                    popupWindow.showAtLocation(findViewById(R.id.mainView), Gravity.CENTER, -50, 0);
 
                                 }
                             }
@@ -491,32 +491,32 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 updateDeviceLocation(deviceHardwareAddress);
 
 //                if (currentKey != null) {
-                    dbRef = dbRootNode.getReference("locations/" + currentKey);
+                dbRef = dbRootNode.getReference("locations/" + currentKey);
 
-                    String finalDeviceName = deviceName;
-                    String finalDeviceAlias = deviceAlias;
-                    String finalDeviceType = deviceType;
-                    dbRef.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
-                        @Override
-                        public void onComplete(@NonNull Task<DataSnapshot> task) {
-                            if (!task.isSuccessful()) {
-                                Log.e("firebase", "Error getting data", task.getException());
-                            } else {
-                                //si le device n'existe pas encore dans la table
-                                if (!task.getResult().hasChild(deviceHardwareAddress))
-                                {
+                String finalDeviceName = deviceName;
+                String finalDeviceAlias = deviceAlias;
+                String finalDeviceType = deviceType;
+                dbRef.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DataSnapshot> task) {
+                        if (!task.isSuccessful()) {
+                            Log.e("firebase", "Error getting data", task.getException());
+                        } else {
+                            //si le device n'existe pas encore dans la table
+                            if (!task.getResult().hasChild(deviceHardwareAddress))
+                            {
 //                                    Log.d("NEW", "new device : "+deviceHardwareAddress);
-                                    // Write a message to the database
-                                    dbRootNode.getReference("locations/" + currentKey).child(deviceHardwareAddress).child("name").setValue(finalDeviceName);
-                                    dbRootNode.getReference("locations/" + currentKey).child(deviceHardwareAddress).child("alias").setValue(finalDeviceAlias);
-                                    dbRootNode.getReference("locations/" + currentKey).child(deviceHardwareAddress).child("type").setValue(finalDeviceType);
-                                }
-
-
+                                // Write a message to the database
+                                dbRootNode.getReference("locations/" + currentKey).child(deviceHardwareAddress).child("name").setValue(finalDeviceName);
+                                dbRootNode.getReference("locations/" + currentKey).child(deviceHardwareAddress).child("alias").setValue(finalDeviceAlias);
+                                dbRootNode.getReference("locations/" + currentKey).child(deviceHardwareAddress).child("type").setValue(finalDeviceType);
                             }
+
+
                         }
-                    });
-                    addNearbyDevice(deviceHardwareAddress, finalDeviceName, finalDeviceAlias, finalDeviceType);
+                    }
+                });
+                addNearbyDevice(deviceHardwareAddress, finalDeviceName, finalDeviceAlias, finalDeviceType);
 //                }
             }
         }
@@ -592,8 +592,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         final AlertDialog alert = builder.create();
         alert.show();
     }
-    
-//    @RequiresApi(api = Build.VERSION_CODES.N)
+
+    //    @RequiresApi(api = Build.VERSION_CODES.N)
     private void addNearbyDevice(String macAddr, String name, String alias, String type) {
 
 //        TextView liste = findViewById(R.id.textView);
@@ -751,7 +751,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private void addToFavorites(Device device)
     {
         favoritesList.add(device.mac_addr);
-        dbRef = dbRootNode.getReference("favorites").push();
+        dbRef = dbRootNode.getReference("favorites");
 
         dbRef.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
             @Override
@@ -780,12 +780,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 }
                 else {
                     for (DataSnapshot d: task.getResult().getChildren()) {
-                        for (DataSnapshot d_: d.getChildren())
+
+                        if (d.getKey().equals(device.mac_addr))
                         {
-                            if (d_.getKey().equals(device.mac_addr))
-                            {
-                                d.getRef().removeValue();
-                            }
+                            d.getRef().removeValue();
                         }
 
                     }
@@ -972,10 +970,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     DataSnapshot favChildren = result.child("favorites");
                     for (DataSnapshot d_fav: favChildren.getChildren())
                     {
-                        for (DataSnapshot d_fav_1: d_fav.getChildren())
-                        {
-                            favoritesList.add(d_fav_1.getKey());
-                        }
+                        favoritesList.add(d_fav.getKey());
                     }
                 }
             }
