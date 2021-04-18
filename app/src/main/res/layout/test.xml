@@ -29,13 +29,6 @@
         app:layout_constraintStart_toStartOf="@+id/mapView"
         app:layout_constraintTop_toTopOf="@+id/mapView" />
 
-    <View
-        android:id="@+id/view"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        tools:layout_editor_absoluteX="476dp"
-        tools:layout_editor_absoluteY="29dp" />
-
     <ScrollView
         android:id="@+id/SCROLLER_ID"
         android:layout_width="160dp"
