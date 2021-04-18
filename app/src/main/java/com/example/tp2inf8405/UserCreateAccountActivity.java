@@ -73,7 +73,6 @@ public class UserCreateAccountActivity extends AppCompatActivity {
                 String inputText = String.valueOf(userInput.getText());
                 if (!inputText.equals(""))
                 {
-                    //TODO : vérifier dans la BD si le nom existe pas déjà
                     if (namesInDB.contains(inputText))
                     {
                         String toastText = "Ce nom existe déjà; veuillez en choisir un autre.";
@@ -83,9 +82,11 @@ public class UserCreateAccountActivity extends AppCompatActivity {
 
                     else
                     {
+
                         namesInDB.add(inputText);
                         dbRef = dbRootNode.getReference("accounts").push();
                         dbRef.child(inputText).child("username").setValue(inputText);
+                        //TODO : envoyer l'image à la base de données
                     }
                 }
             }
@@ -110,6 +111,7 @@ public class UserCreateAccountActivity extends AppCompatActivity {
         ImageView profilePicture = (ImageView) findViewById(R.id.profilePicture);
 
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
+
             Bundle extras = data.getExtras();
             Bitmap imageBitmap = (Bitmap) extras.get("data");
             profilePicture.setImageBitmap(imageBitmap);
