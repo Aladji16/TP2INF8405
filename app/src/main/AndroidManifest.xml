@@ -12,11 +12,10 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-feature android:name="android.hardware.camera"
+
+    <uses-feature
+        android:name="android.hardware.camera"
         android:required="true" />
-
-
-
 
     <application
         android:allowBackup="true"
@@ -25,7 +24,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.TP2INF8405">
-        <activity android:name=".SplashActivity"
+        <activity android:name=".UserProfileActivity"></activity>
+        <activity
+            android:name=".SplashActivity"
             android:screenOrientation="landscape"
             android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
             <intent-filter>
@@ -36,12 +37,10 @@
         </activity>
         <activity
             android:name=".UserFirstPageActivity"
-            android:screenOrientation="landscape">
-        </activity>
+            android:screenOrientation="landscape"></activity>
         <activity
             android:name=".UserCreateAccountActivity"
-            android:screenOrientation="landscape">
-        </activity>
+            android:screenOrientation="landscape"></activity>
         <!--
         <activity
             android:name=".UserLoginActivity"
@@ -63,9 +62,9 @@
 
         <activity
             android:name=".MapsActivity"
+            android:label="@string/title_activity_maps"
             android:screenOrientation="landscape"
-            android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
-            android:label="@string/title_activity_maps">
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
 
             <!-- <intent-filter> -->
             <!-- <action android:name="android.intent.action.MAIN" /> -->

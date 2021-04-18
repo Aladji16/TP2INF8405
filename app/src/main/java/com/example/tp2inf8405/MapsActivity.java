@@ -116,25 +116,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         currentUsername = getIntent().getStringExtra("username");
         handleCurrentUsername();
 
-        Button btn = findViewById(R.id.btn);
-        ConstraintLayout container = (ConstraintLayout) findViewById(R.id.mainView);
-
-        btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (!isDarkMode) {
-                    container.setBackgroundResource(R.color.black);
-                    btn.setBackgroundColor(Color.rgb(77, 0, 153));
-                    btn.setTextColor(Color.WHITE);
-                    isDarkMode = true;
-                } else if (isDarkMode) {
-                    container.setBackgroundResource(R.color.white);
-                    btn.setBackgroundColor(Color.rgb(204, 153, 255));
-                    btn.setTextColor(Color.BLACK);
-                    isDarkMode = false;
-                }
-            }
-        });
+        setSwapThemeListener();
 
         if (!bluetoothAdapter.isEnabled()) {
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
@@ -890,12 +872,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         dbRef = dbRootNode.getReference("accounts").push();
                         currentUserKey = dbRef.getKey();
                         dbRef.child("username").setValue(currentUsername);
+
+                        // TODO: Set B64 encoded image from default_profile PNG in our drawables
+                        // dbRef.child("profilePicture").setValue()
                     }
 
                     // Handle current user's locations and favorite devices
                     getAllInitLocationKeys();
                     getAllInitFavorites();
 
+                    // Handle profile navigation and location callbacks
+                    setProfileNavigationListener();
                     handleMFusedLocationClient();
                 }
 
@@ -949,6 +936,41 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mFusedLocationClient.getLastLocation();
     }
 
+    private void setSwapThemeListener() {
+        Button btn = findViewById(R.id.btn);
+        ConstraintLayout container = (ConstraintLayout) findViewById(R.id.mainView);
+
+        btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (!isDarkMode) {
+                    container.setBackgroundResource(R.color.black);
+                    btn.setBackgroundColor(Color.rgb(77, 0, 153));
+                    btn.setTextColor(Color.WHITE);
+                    isDarkMode = true;
+                } else if (isDarkMode) {
+                    container.setBackgroundResource(R.color.white);
+                    btn.setBackgroundColor(Color.rgb(204, 153, 255));
+                    btn.setTextColor(Color.BLACK);
+                    isDarkMode = false;
+                }
+            }
+        });
+    }
+
+    private void setProfileNavigationListener() {
+        Button profileBtn = findViewById(R.id.profileBtn);
+
+        profileBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent toProfileIntent = new Intent(getApplicationContext(), UserProfileActivity.class);
+                toProfileIntent.putExtra("currentUsername", currentUsername);
+                toProfileIntent.putExtra("currentUserKey", currentUserKey);
+                startActivity(toProfileIntent);
+            }
+        });
+    }
 
 
 }
