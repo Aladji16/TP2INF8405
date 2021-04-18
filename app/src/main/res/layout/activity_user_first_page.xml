@@ -29,7 +29,7 @@
         android:layout_height="37dp"
         android:layout_marginStart="75dp"
         android:layout_marginLeft="75dp"
-        android:layout_marginTop="84dp"
+        android:layout_marginTop="40dp"
         android:layout_marginEnd="74dp"
         android:layout_marginRight="74dp"
         android:textColor="#131010"
@@ -63,8 +63,10 @@
         android:layout_marginEnd="119dp"
         android:layout_marginRight="119dp"
         android:text="Créer un compte"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/loginButton" />
+        app:layout_constraintTop_toBottomOf="@+id/loginButton"
+        app:layout_constraintVertical_bias="0.115" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

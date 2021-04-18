@@ -44,13 +44,12 @@
         android:layout_height="35dp"
         android:layout_marginStart="160dp"
         android:layout_marginLeft="160dp"
-        android:layout_marginTop="108dp"
+        android:layout_marginTop="56dp"
         android:layout_marginEnd="160dp"
         android:layout_marginRight="160dp"
         android:text="@string/configChangePFP"
         android:textSize="9sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/profileUsername" />
 
