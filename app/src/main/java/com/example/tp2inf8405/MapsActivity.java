@@ -487,6 +487,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         unregisterReceiver(receiver);
     }
 
+
+    @Override
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        Log.d("hahaha", "hahaha restauré");
+    }
+
+
     @Override
     protected void onResume() {
         handler.postDelayed(usageUpdate = new Runnable() {

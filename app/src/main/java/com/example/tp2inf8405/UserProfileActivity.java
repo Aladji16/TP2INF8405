@@ -94,7 +94,6 @@ public class UserProfileActivity extends AppCompatActivity {
 
 
 
-
     public void takePicture()
     {
         //https://developer.android.com/training/camera/photobasics
