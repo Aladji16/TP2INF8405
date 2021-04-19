@@ -28,5 +28,10 @@
     <string name="UplinkVal" translatable="true">Téléversement: </string>
     <string name="DownlinkVal" translatable="true">Téléchargement: </string>
     <string name="title_activity_main_view" translatable="true">MainView</string>
-    <string name="LanguageSelect" translatable="true">EN</string>
+    <string name="LanguageSelect" translatable="true">Afficher en anglais</string>
+    <string name="Parameters" translatable="true">Paramètres</string>
+    <string name="homePage" translatable="true">Page d\'accueil</string>
+    <string name="connect" translatable="true">Se connecter</string>
+    <string name="createAccount" translatable="true">Créer un compte</string>
+
 </resources>

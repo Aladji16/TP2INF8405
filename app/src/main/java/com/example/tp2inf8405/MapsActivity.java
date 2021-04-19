@@ -170,6 +170,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 if (mLastLocation == null || isDistantEnough(latitude, mLastLocation.getLatitude())
                         || isDistantEnough(longitude, mLastLocation.getLongitude())) {
 
+
+
                     Log.d("nearby device", "onSuccess location callback");
 
 
@@ -177,6 +179,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     nearbyDevices = new ArrayList<Device>();
 
                     Log.d("LOCATION", "new location");
+                    Log.d("LOCATIONKEY", currentUserLocationKey);
+                    Log.d("first long", String.valueOf(longitude));
+                    Log.d("second long", String.valueOf(mLastLocation.getLongitude()));
+                    Log.d("first lat", String.valueOf(latitude));
+                    Log.d("second lat", String.valueOf(mLastLocation.getLatitude()));
                     mLastLocation = location;
                     dbRef = dbRootNode.getReference("accounts/" + currentUserKey + "/locations").push();
                     String locationKey = dbRef.getKey();
@@ -427,7 +434,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     // Algos pour determiner si la localization retrouvee est assez loin
     private boolean isDistantEnough(double l1, double l2) {
         double distance = Math.abs(l1 - l2);
-        return distance >= 0.0005; //5e-5 vaut a peu pres 5 mètres
+        return distance >= 0.001; //5e-5 vaut a peu pres 5 mètres
     }
 
 
@@ -959,6 +966,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
     }
+
+
 
     private void setProfileNavigationListener() {
         Button profileBtn = findViewById(R.id.profileBtn);

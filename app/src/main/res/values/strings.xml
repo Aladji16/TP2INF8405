@@ -27,5 +27,9 @@
     <string name="UplinkVal" translatable="true">Upload: </string>
     <string name="DownlinkVal" translatable="true">Download: </string>
     <string name="title_activity_main_view" translatable="true">MainView</string>
-    <string name="LanguageSelect" translatable="true">FR</string>
+    <string name="LanguageSelect" translatable="true">Switch to French</string>
+    <string name="Parameters" translatable="true">Parameters</string>
+    <string name="homePage" translatable="true">Home page</string>
+    <string name="connect" translatable="true">Connect</string>
+    <string name="createAccount" translatable="true">Create an account</string>
 </resources>

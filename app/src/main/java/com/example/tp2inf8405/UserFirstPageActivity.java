@@ -2,7 +2,10 @@ package com.example.tp2inf8405;
 
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -19,6 +22,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
+import java.util.Locale;
 
 public class UserFirstPageActivity extends AppCompatActivity {
     public static ArrayList<String> namesInDB = new ArrayList<String>();
@@ -29,6 +33,8 @@ public class UserFirstPageActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_first_page);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        setLanguageListener();
+
 
         // If user comes back from creating an account
         String newAccountUsername = getIntent().getStringExtra("newAccountUsername");
@@ -85,6 +91,27 @@ public class UserFirstPageActivity extends AppCompatActivity {
                         namesInDB.add(d.child("username").getValue().toString());
                     }
                 }
+            }
+        });
+    }
+
+
+    private void setLanguageListener() {
+        Button language = findViewById(R.id.Language);
+        language.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Resources res = getResources();
+                Configuration con = res.getConfiguration();
+                DisplayMetrics dm = res.getDisplayMetrics();
+                Locale en = new Locale("en");
+                if (con.locale == en) {
+                    con.locale = new Locale("fr-rCA");
+                } else {
+                    con.locale = en;
+                }
+                res.updateConfiguration(con, dm);
+                recreate();
             }
         });
     }
