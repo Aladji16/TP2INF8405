@@ -21,6 +21,10 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
@@ -68,7 +72,7 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, SensorEventListener {
 
     private GoogleMap mMap;
     private BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -103,6 +107,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     boolean isDarkMode = false;
 
+    private SensorManager lightSensorManager;
+    private Sensor lightSensor;
+    private TextView lightValTextView;
+
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -124,6 +132,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         handleCurrentUsername();
 
         setSwapThemeListener();
+        setupLightSensor();
 
         if (!bluetoothAdapter.isEnabled()) {
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
@@ -447,15 +456,37 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 handler.postDelayed(usageUpdate, 30*1000);
             }
         }, 30*1000);
+
+        // Register listener for light sensor
+        lightSensorManager.registerListener(this, lightSensor, SensorManager.SENSOR_DELAY_NORMAL);
         super.onResume();
     }
 
     @Override
     protected void onPause() {
         handler.removeCallbacks(usageUpdate);
+
+        // Unregister listener for light sensor
+        lightSensorManager.unregisterListener(this);
+
         super.onPause();
     }
 
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        // Handle light sensor change
+        if (event.sensor.getType() == Sensor.TYPE_LIGHT) {
+            float lightVal = event.values[0];
+            Log.d("onSensorChanged LIGHT", String.valueOf(lightVal));
+            lightValTextView = (TextView) findViewById(R.id.lightVal);
+            lightValTextView.setText(getString(R.string.lightVal) + " " + lightVal);
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+    }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -1005,5 +1036,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
+    private void setupLightSensor() {
+        // Get an instance of the sensor service, and use that to get an instance of
+        // a particular sensor.
+        lightSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        lightSensor = lightSensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
+        Log.d("LightSensor", "setup complete!");
+    }
 
 }

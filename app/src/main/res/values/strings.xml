@@ -27,4 +27,5 @@
     <string name="batteryLevel">Battery: </string>
     <string name="UplinkVal">Upload: </string>
     <string name="DownlinkVal">Download: </string>
+    <string name="lightVal">Light: </string>
 </resources>
