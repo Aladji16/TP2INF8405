@@ -15,7 +15,7 @@
         android:layout_marginEnd="148dp"
         android:layout_marginRight="148dp"
         android:gravity="center|center_horizontal"
-        android:text="Page d'accueil"
+        android:text="@string/homePage"
         android:textColor="#050505"
         android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -48,7 +48,7 @@
         android:layout_marginTop="8dp"
         android:layout_marginEnd="119dp"
         android:layout_marginRight="119dp"
-        android:text="Se connecter"
+        android:text="@string/connect"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/username_input" />
@@ -62,11 +62,23 @@
         android:layout_marginTop="32dp"
         android:layout_marginEnd="119dp"
         android:layout_marginRight="119dp"
-        android:text="Créer un compte"
+        android:text="@string/createAccount"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/loginButton"
-        app:layout_constraintVertical_bias="0.115" />
+        app:layout_constraintVertical_bias="0.002" />
+
+    <Button
+        android:id="@+id/Language"
+        android:layout_width="wrap_content"
+        android:layout_height="44dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="40dp"
+        android:layout_marginRight="40dp"
+        android:text="@string/LanguageSelect"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
