@@ -1,9 +1,12 @@
 package com.example.tp2inf8405;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -34,6 +37,7 @@ public class UserFirstPageActivity extends AppCompatActivity {
         setContentView(R.layout.activity_user_first_page);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         setLanguageListener();
+
 
 
         // If user comes back from creating an account
@@ -121,4 +125,7 @@ public class UserFirstPageActivity extends AppCompatActivity {
     }
 
 
-    }
+
+
+
+}

@@ -29,6 +29,7 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkCapabilities;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.BatteryManager;
 import android.os.Build;
@@ -342,7 +343,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                         }
                                     });
                                     popupWindow.setOutsideTouchable(true);
-                                    popupWindow.showAtLocation(findViewById(R.id.mainView), Gravity.NO_GRAVITY, 500, 100);
+                                    popupWindow.showAtLocation(findViewById(R.id.mainView), Gravity.NO_GRAVITY, 400, 100);
 
                                 }
                             }
@@ -365,7 +366,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, -1);
                 switch (state) {
                     case BluetoothAdapter.STATE_OFF:
-                        //surement besoin d'un message/toast "vous avez besoin de bluetooth pour..."
+                        String toastText = getString(R.string.bluetooth_off_message);
+                        Toast toast = Toast.makeText(getApplicationContext(), toastText, Toast.LENGTH_LONG);
+                        toast.show();
                         break;
                     case BluetoothAdapter.STATE_ON:
                         bluetoothAdapter.startDiscovery();
@@ -467,14 +470,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     protected void onResume() {
-        handler.postDelayed(usageUpdate = new Runnable() {
-            @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-            public void run() {
-                updateUsage(getApplicationContext());
-                handler.postDelayed(usageUpdate, 30*1000);
-            }
-        }, 30*1000);
+            handler.postDelayed(usageUpdate = new Runnable() {
+                @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+                public void run() {
 
+                        updateUsage(getApplicationContext());
+                        handler.postDelayed(usageUpdate, 30 * 1000);
+                }
+            }, 30 * 1000);
         // Register listener for light sensor
         lightSensorManager.registerListener(this, lightSensor, SensorManager.SENSOR_DELAY_NORMAL);
         if (accelerometer != null) {
@@ -1053,7 +1056,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public void onReceive(Context context, Intent intent) {
                 if (intent.getBooleanExtra("state", false)) {
                     //Close bluetooth
-                    bluetoothAdapter.disable();
+//                    bluetoothAdapter.disable();
                 } else {
                     //Activate bluetooth
                     if (!bluetoothAdapter.isEnabled()) {
@@ -1078,19 +1081,24 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
             cap = man.getNetworkCapabilities(man.getActiveNetwork());
         }
-        double downlink = cap.getLinkDownstreamBandwidthKbps();
-        double uplink = cap.getLinkUpstreamBandwidthKbps();
+        if (isDeviceConnected()) {
+
+            double downlink = cap.getLinkDownstreamBandwidthKbps();
+            double uplink = cap.getLinkUpstreamBandwidthKbps();
+
+            TextView up = findViewById(R.id.UplinkVal);
+            TextView down = findViewById(R.id.DownlinkVal);
+            up.setText(getString(R.string.UplinkVal)+" "+String.valueOf(uplink)+" kbps");
+            down.setText(getString(R.string.DownlinkVal)+" "+String.valueOf(downlink)+" kbps");
+        }
         //https://developer.android.com/training/monitoring-device-state/battery-monitoring#CurrentLevel
         IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
         Intent batteryStatus = context.registerReceiver(null, ifilter);
         float battery = batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) * 100 /
                 batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
         TextView bat = findViewById(R.id.BatteryLevel);
-        TextView up = findViewById(R.id.UplinkVal);
-        TextView down = findViewById(R.id.DownlinkVal);
         bat.setText(getString(R.string.batteryLevel)+" "+String.valueOf(battery)+"%");
-        up.setText(getString(R.string.UplinkVal)+" "+String.valueOf(uplink)+" kbps");
-        down.setText(getString(R.string.DownlinkVal)+" "+String.valueOf(downlink)+" kbps");
+
 
 
     }
@@ -1108,6 +1116,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         accelerometer = shakeSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         Log.d("ShakeSensor", "setup complete!");
 
+    }
+
+    private boolean isDeviceConnected() {
+//        https://stackoverflow.com/questions/42350780/how-to-detect-internet-connection-in-android-studio
+        ConnectivityManager manager =(ConnectivityManager) getApplicationContext()
+                .getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = manager.getActiveNetworkInfo();
+        if(activeNetwork ==null) {
+            return false;
+        }
+        return activeNetwork.isConnected();
     }
 
 }

@@ -36,4 +36,5 @@
     <string name="x_acc">x-axis acceleration:</string>
     <string name="y_acc">y-axis acceleration:</string>
     <string name="z_acc">z-axis acceleration:</string>
+    <string name="bluetooth_off_message">Bluetooth has been disabled. You need to activate Bluetooth back to discover surrounding devices.</string>
 </resources>

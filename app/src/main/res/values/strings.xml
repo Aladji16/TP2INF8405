@@ -36,4 +36,5 @@
 <string name="x_acc">accélération axe x:</string>
 <string name="y_acc">accélération axe y:</string>
 <string name="z_acc">accélération axe z:</string>
+    <string name="bluetooth_off_message">Le bluetooth est désactivé. Vous avez besoin de le réactiver pour découvrir des périphériques alentour.</string>
 </resources>
