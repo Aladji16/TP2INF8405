@@ -19,6 +19,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.hardware.Sensor;
@@ -34,6 +36,7 @@ import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -71,6 +74,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, SensorEventListener {
 
@@ -133,6 +137,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         setSwapThemeListener();
         setupLightSensor();
+        setLanguageListener();
+        setAirplaneModeListener();
 
         if (!bluetoothAdapter.isEnabled()) {
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
@@ -991,6 +997,26 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
     }
 
+    private void setLanguageListener() {
+        Button language = findViewById(R.id.Language);
+        language.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Resources res = getResources();
+                Configuration con = res.getConfiguration();
+                DisplayMetrics dm = res.getDisplayMetrics();
+                Locale en = new Locale("en");
+                if (con.locale == en) {
+                    con.locale = new Locale("fr-rCA");
+                } else {
+                    con.locale = en;
+                }
+                res.updateConfiguration(con, dm);
+                recreate();
+            }
+        });
+    }
+
     private void setProfileNavigationListener() {
         Button profileBtn = findViewById(R.id.profileBtn);
 
@@ -1005,7 +1031,25 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
     }
 
-
+    private void setAirplaneModeListener() {
+        IntentFilter intIf = new IntentFilter("android.intent.action.AIRPLANE_MODE");
+        BroadcastReceiver bR = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (intent.getBooleanExtra("state", false)) {
+                    //Close bluetooth
+                    bluetoothAdapter.disable();
+                } else {
+                    //Activate bluetooth
+                    if (!bluetoothAdapter.isEnabled()) {
+                        Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                        startActivityForResult(enableBtIntent, 1);
+                    }
+                }
+            }
+        };
+        getApplicationContext().registerReceiver(bR, intIf);
+    }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     public void updateUsage(Context context) {
