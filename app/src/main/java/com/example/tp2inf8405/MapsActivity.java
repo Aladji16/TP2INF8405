@@ -19,6 +19,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.hardware.Sensor;
@@ -35,6 +36,7 @@ import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -73,6 +75,8 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.example.tp2inf8405.UserFirstPageActivity.con;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, SensorEventListener {
 
@@ -133,9 +137,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 //        https://www.geeksforgeeks.org/android-how-to-request-permissions-in-android-application/
 //        action_state_changed https://www.programcreek.com/java-api-examples/?class=android.bluetooth.BluetoothAdapter&method=ACTION_STATE_CHANGED
 
-        Log.d("OnCreate", "is called");
 
         super.onCreate(savedInstanceState);
+
+        // Set to app locale from config
+        Resources res = getResources();
+        DisplayMetrics dm = res.getDisplayMetrics();
+        res.updateConfiguration(con, dm);
+
         setContentView(R.layout.test);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
@@ -211,13 +220,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                     // RESET EVERYTHING
                     nearbyDevices = new ArrayList<Device>();
-//
-//                    Log.d("LOCATION", "new location");
-//                    Log.d("LOCATIONKEY", currentUserLocationKey);
-//                    Log.d("first long", String.valueOf(longitude));
-//                    Log.d("second long", String.valueOf(mLastLocation.getLongitude()));
-//                    Log.d("first lat", String.valueOf(latitude));
-//                    Log.d("second lat", String.valueOf(mLastLocation.getLatitude()));
                     int index = isLocationInBD(longitude, latitude);
                     if (index != -1) {
                         currentUserLocationKey = locationKeys.get(index).key;
@@ -481,7 +483,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     protected void onDestroy() {
-        Log.d("destroy", "is called");
         super.onDestroy();
         // Don't forget to unregister the ACTION_FOUND receiver.
         unregisterReceiver(receiver);
@@ -491,7 +492,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        Log.d("hahaha", "hahaha restauré");
     }
 
 
@@ -539,7 +539,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onSensorChanged(SensorEvent event) {
         if (event.sensor.getType() == Sensor.TYPE_LIGHT) {
             float lightVal = event.values[0];
-//            Log.d("onSensorChanged LIGHT", String.valueOf(lightVal));
             lightValTextView = (TextView) findViewById(R.id.lightVal);
             lightValTextView.setText(getString(R.string.lightVal) + " " + lightVal + " lux");
         }
@@ -693,12 +692,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     private int handleFirstLocation(Location location) {
-        Log.d("handlefirst","is called");
         double longitude = location.getLongitude();
         double latitude = location.getLatitude();
 
         dbRef = dbRootNode.getReference("accounts/" + currentUserKey + "/locations");
-        Log.d("handleFirstLocation", currentUserKey);
         dbRef.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DataSnapshot> task) {
@@ -1022,8 +1019,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     private void handleMFusedLocationClient() {
-        Log.d("handlefusedclient","is called");
-
         // nécessité de demander l'autorisation pour l'accès aux localisations
         int permissionCheck1 = ContextCompat.checkSelfPermission(getBaseContext(), Manifest.permission.ACCESS_COARSE_LOCATION);
         int permissionCheck2 = ContextCompat.checkSelfPermission(getBaseContext(), Manifest.permission.ACCESS_FINE_LOCATION);

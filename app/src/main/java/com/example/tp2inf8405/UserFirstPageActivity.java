@@ -29,16 +29,17 @@ import java.util.Locale;
 
 public class UserFirstPageActivity extends AppCompatActivity {
     public static ArrayList<String> namesInDB = new ArrayList<String>();
+    public static Configuration con;
+
     private FirebaseDatabase dbRootNode = FirebaseDatabase.getInstance();
     private DatabaseReference dbRef = dbRootNode.getReference();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        initAppLang();
         setContentView(R.layout.activity_user_first_page);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         setLanguageListener();
-
-
 
         // If user comes back from creating an account
         String newAccountUsername = getIntent().getStringExtra("newAccountUsername");
@@ -99,6 +100,15 @@ public class UserFirstPageActivity extends AppCompatActivity {
         });
     }
 
+    private void initAppLang() {
+        Resources res = getResources();
+        con = getResources().getConfiguration();
+        DisplayMetrics dm = res.getDisplayMetrics();
+        Locale fr = new Locale("fr_FR");
+        con.locale = fr;
+        res.updateConfiguration(con, dm);
+    }
+
 
     private void setLanguageListener() {
         Button language = findViewById(R.id.Language);
@@ -106,7 +116,7 @@ public class UserFirstPageActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Resources res = getResources();
-                Configuration con = res.getConfiguration();
+                con = res.getConfiguration();
                 DisplayMetrics dm = res.getDisplayMetrics();
                 Locale en = new Locale("en");
                 Log.d("locale",con.locale.toString());
@@ -115,7 +125,6 @@ public class UserFirstPageActivity extends AppCompatActivity {
                     con.locale = new Locale("fr_FR");
                 } else {
                     Log.d("non","non");
-
                     con.locale = en;
                 }
                 res.updateConfiguration(con, dm);

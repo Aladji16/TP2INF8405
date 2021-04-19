@@ -11,11 +11,13 @@ import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Base64;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -32,6 +34,8 @@ import com.google.firebase.database.FirebaseDatabase;
 
 import java.io.ByteArrayOutputStream;
 
+import static com.example.tp2inf8405.UserFirstPageActivity.con;
+
 public class UserProfileActivity extends AppCompatActivity {
     private FirebaseDatabase dbRootNode = FirebaseDatabase.getInstance();
     private DatabaseReference dbRef = dbRootNode.getReference();
@@ -45,6 +49,12 @@ public class UserProfileActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Set to app locale from config
+        Resources res = getResources();
+        DisplayMetrics dm = res.getDisplayMetrics();
+        res.updateConfiguration(con, dm);
+
         setContentView(R.layout.activity_user_profile);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 

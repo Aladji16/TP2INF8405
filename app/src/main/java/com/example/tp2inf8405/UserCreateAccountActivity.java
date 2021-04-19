@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.hardware.Camera;
@@ -13,6 +14,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Base64;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -34,6 +36,7 @@ import com.google.firebase.database.FirebaseDatabase;
 
 import java.io.ByteArrayOutputStream;
 
+import static com.example.tp2inf8405.UserFirstPageActivity.con;
 import static com.example.tp2inf8405.UserFirstPageActivity.namesInDB;
 
 public class UserCreateAccountActivity extends AppCompatActivity {
@@ -46,6 +49,12 @@ public class UserCreateAccountActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Set to app locale from config
+        Resources res = getResources();
+        DisplayMetrics dm = res.getDisplayMetrics();
+        res.updateConfiguration(con, dm);
+
         setContentView(R.layout.activity_create_account);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
