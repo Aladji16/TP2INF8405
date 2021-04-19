@@ -26,6 +26,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
+import android.hardware.SensorListener;
 import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationManager;
@@ -111,6 +112,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     boolean isDarkMode = false;
 
+    //shake
+    private SensorManager shakeSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+    private Sensor accelerometer = shakeSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+    private static final float SHAKE_THRESHOLD = 3.25f; // m/S**2
+    private static final int MIN_TIME_BETWEEN_SHAKES_MILLISECS = 1000;
+    private long lastShakeTime = Integer.MAX_VALUE;
+
+
+    //light
     private SensorManager lightSensorManager;
     private Sensor lightSensor;
     private TextView lightValTextView;
@@ -471,6 +481,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         // Register listener for light sensor
         lightSensorManager.registerListener(this, lightSensor, SensorManager.SENSOR_DELAY_NORMAL);
+        if (accelerometer != null) {
+            shakeSensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+        }
         super.onResume();
     }
 
@@ -480,18 +493,39 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         // Unregister listener for light sensor
         lightSensorManager.unregisterListener(this);
+        shakeSensorManager.unregisterListener(this);
 
         super.onPause();
     }
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        // Handle light sensor change
         if (event.sensor.getType() == Sensor.TYPE_LIGHT) {
             float lightVal = event.values[0];
             Log.d("onSensorChanged LIGHT", String.valueOf(lightVal));
             lightValTextView = (TextView) findViewById(R.id.lightVal);
             lightValTextView.setText(getString(R.string.lightVal) + " " + lightVal);
+        }
+        else if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+            long curTime = System.currentTimeMillis();
+            if ((curTime - lastShakeTime) > MIN_TIME_BETWEEN_SHAKES_MILLISECS) {
+
+                float x = event.values[0];
+                float y = event.values[1];
+                float z = event.values[2];
+
+                double acceleration = Math.sqrt(Math.pow(x, 2) +
+                        Math.pow(y, 2) +
+                        Math.pow(z, 2)) - SensorManager.GRAVITY_EARTH;
+
+                if (acceleration > SHAKE_THRESHOLD) {
+                    lastShakeTime = curTime;
+
+                    // Do wtv the shake is supposed to do here
+
+
+                }
+            }
         }
     }
 
