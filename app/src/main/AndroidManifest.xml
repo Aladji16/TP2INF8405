@@ -28,7 +28,8 @@
         <activity
             android:name=".SplashActivity"
             android:screenOrientation="landscape"
-            android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+            android:configChanges="locale">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -37,13 +38,15 @@
         </activity>
         <activity
             android:name=".UserFirstPageActivity"
-            android:screenOrientation="landscape">
+            android:screenOrientation="landscape"
+            android:configChanges="locale|orientation">
 
         </activity>
         <activity
             android:name=".UserCreateAccountActivity"
             android:screenOrientation="landscape"
-            android:parentActivityName=".UserFirstPageActivity">
+            android:parentActivityName=".UserFirstPageActivity"
+            android:configChanges="locale">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".UserFirstPageActivity"/>
@@ -51,7 +54,8 @@
         <activity
             android:name=".UserProfileActivity"
             android:screenOrientation="landscape"
-            android:parentActivityName=".MapsActivity">
+            android:parentActivityName=".MapsActivity"
+            android:configChanges="locale">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".MapsActivity"/>
@@ -73,7 +77,8 @@
             android:label="@string/title_activity_maps"
             android:screenOrientation="landscape"
             android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
-            android:parentActivityName=".UserFirstPageActivity">
+            android:parentActivityName=".UserFirstPageActivity"
+            android:configChanges="locale">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".UserFirstPageActivity"/>

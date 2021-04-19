@@ -1,0 +1,35 @@
+<resources>
+    <string name="app_name">TP2INF8405</string>
+    <string name="title_activity_maps">Maps</string>
+    <string name="maps_logo">App Logo</string>
+    <string name="about_member1">Dinh Huân Philippe Duong</string>
+    <string name="about_member2">Yassine Belkacemi</string>
+    <string name="about_member3">Simon Moreau</string>
+    <string name="about_member4">Aladji Faye</string>
+    <string name="about_group">Groupe 01</string>
+    <string name="about_version">Version 1.0.0</string>
+    <!-- Strings used for fragments for navigation -->
+    <string name="first_fragment_label" translatable="true">First Fragment</string>
+    <string name="second_fragment_label" translatable="true">Second Fragment</string>
+    <string name="next" translatable="true">Next</string>
+    <string name="previous" translatable="true">Previous</string>
+    <string name="profileBtn" translatable="true">Profile</string>
+    <string name="swapThemeBtn" translatable="true">Swap Theme</string>
+    <string name="userNotInDB" translatable="true">This user does not exist.</string>
+    <string name="userAlreadyInDB" translatable="true">This user already exists. Please choose another name.</string>
+    <string name="profileUsername" translatable="true">Username: </string>
+    <string name="configChangePFP" translatable="true">Change profile picture</string>
+    <string name="foundDevicesInfo" translatable="true">Devices found at :</string>
+
+    <string name="hello_first_fragment" translatable="true">Hello first fragment</string>
+    <string name="hello_second_fragment" translatable="true">Hello second fragment. Arg: %1$s</string>
+    <string name="batteryLevel" translatable="true">Battery: </string>
+    <string name="UplinkVal" translatable="true">Upload: </string>
+    <string name="DownlinkVal" translatable="true">Download: </string>
+    <string name="title_activity_main_view" translatable="true">MainView</string>
+    <string name="LanguageSelect" translatable="true">Switch to French</string>
+    <string name="Parameters" translatable="true">Parameters</string>
+    <string name="homePage" translatable="true">Home page</string>
+    <string name="connect" translatable="true">Connect</string>
+    <string name="createAccount" translatable="true">Create an account</string>
+</resources>

@@ -105,9 +105,13 @@ public class UserFirstPageActivity extends AppCompatActivity {
                 Configuration con = res.getConfiguration();
                 DisplayMetrics dm = res.getDisplayMetrics();
                 Locale en = new Locale("en");
-                if (con.locale == en) {
-                    con.locale = new Locale("fr-rCA");
+                Log.d("locale",con.locale.toString());
+                if (con.locale.equals(en)) {
+                    Log.d("oui","oui");
+                    con.locale = new Locale("fr_FR");
                 } else {
+                    Log.d("non","non");
+
                     con.locale = en;
                 }
                 res.updateConfiguration(con, dm);
