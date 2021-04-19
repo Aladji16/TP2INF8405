@@ -62,6 +62,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
@@ -77,7 +78,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private GoogleMap mMap;
     private BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-    private Location mLastLocation; //https://developer.android.com/codelabs/advanced-android-training-device-location#3
+    private Location mLastLocation = null; //https://developer.android.com/codelabs/advanced-android-training-device-location#3
     private LocationRequest locationRequest; //https://developer.android.com/training/location/request-updates
     private LocationCallback locationCallback; //https://developer.android.com/training/location/request-updates
     private BluetoothDevice currentDevice;
@@ -132,6 +133,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 //        https://www.geeksforgeeks.org/android-how-to-request-permissions-in-android-application/
 //        action_state_changed https://www.programcreek.com/java-api-examples/?class=android.bluetooth.BluetoothAdapter&method=ACTION_STATE_CHANGED
 
+        Log.d("OnCreate", "is called");
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.test);
@@ -187,45 +189,61 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 double longitude = location.getLongitude();
                 LatLng test = new LatLng(latitude, longitude);
 
+                if (mLastLocation == null) {
+                    int permissionCheck1 = ContextCompat.checkSelfPermission(getBaseContext(), Manifest.permission.ACCESS_COARSE_LOCATION);
+                    int permissionCheck2 = ContextCompat.checkSelfPermission(getBaseContext(), Manifest.permission.ACCESS_FINE_LOCATION);
 
-                if (mLastLocation == null || isDistantEnough(latitude, mLastLocation.getLatitude())
+                    if (permissionCheck1 != PackageManager.PERMISSION_GRANTED || permissionCheck2 != PackageManager.PERMISSION_GRANTED) {
+                        ActivityCompat.requestPermissions(MapsActivity.this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, 2);
+
+                    }
+                    mFusedLocationClient.getLastLocation();
+
+                }
+
+                else if  (isDistantEnough(latitude, mLastLocation.getLatitude())
                         || isDistantEnough(longitude, mLastLocation.getLongitude())) {
 
-
+                    mLastLocation = location;
 
                     Log.d("nearby device", "onSuccess location callback");
 
 
                     // RESET EVERYTHING
                     nearbyDevices = new ArrayList<Device>();
-
-                    Log.d("LOCATION", "new location");
-                    Log.d("LOCATIONKEY", currentUserLocationKey);
-                    Log.d("first long", String.valueOf(longitude));
-                    Log.d("second long", String.valueOf(mLastLocation.getLongitude()));
-                    Log.d("first lat", String.valueOf(latitude));
-                    Log.d("second lat", String.valueOf(mLastLocation.getLatitude()));
-                    mLastLocation = location;
-                    dbRef = dbRootNode.getReference("accounts/" + currentUserKey + "/locations").push();
-                    String locationKey = dbRef.getKey();
-                    currentUserLocationKey = locationKey;
-                    locationKeys.add(new LocationKey(locationKey, latitude, longitude));
-                    dbRef.child("latitude").setValue(latitude);
-                    dbRef.child("longitude").setValue(longitude);
-                    if (currentPosMarker != null) {
-                        //ajouter l'épingle avec les différents device trouvés
-                        LatLng prev_pos = currentPosMarker.getPosition();
-                        double prev_latitude = prev_pos.latitude;
-                        double prev_longitude = prev_pos.longitude;
-                        mMap.addMarker(new MarkerOptions().position(prev_pos).icon(BitmapDescriptorFactory.fromResource(R.drawable.epingler)).title("Devices found in lat " + String.valueOf(prev_latitude) + " and longitude " + String.valueOf(prev_longitude)));
-
-                        currentPosMarker.remove();
-
+//
+//                    Log.d("LOCATION", "new location");
+//                    Log.d("LOCATIONKEY", currentUserLocationKey);
+//                    Log.d("first long", String.valueOf(longitude));
+//                    Log.d("second long", String.valueOf(mLastLocation.getLongitude()));
+//                    Log.d("first lat", String.valueOf(latitude));
+//                    Log.d("second lat", String.valueOf(mLastLocation.getLatitude()));
+                    int index = isLocationInBD(longitude, latitude);
+                    if (index != -1) {
+                        currentUserLocationKey = locationKeys.get(index).key;
                     }
 
-                    currentPosMarker = mMap.addMarker(new MarkerOptions().position(test).icon(BitmapDescriptorFactory.fromResource(R.drawable.stickman)).title("CurrentPosition"));
-                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(test, 15));
+                    else {
+                        dbRef = dbRootNode.getReference("accounts/" + currentUserKey + "/locations").push();
+                        String locationKey = dbRef.getKey();
+                        currentUserLocationKey = locationKey;
+                        locationKeys.add(new LocationKey(locationKey, latitude, longitude));
+                        dbRef.child("latitude").setValue(latitude);
+                        dbRef.child("longitude").setValue(longitude);
+                    }
+                        if (currentPosMarker != null) {
+                            //ajouter l'épingle avec les différents device trouvés
+                            LatLng prev_pos = currentPosMarker.getPosition();
+                            double prev_latitude = prev_pos.latitude;
+                            double prev_longitude = prev_pos.longitude;
+                            mMap.addMarker(new MarkerOptions().position(prev_pos).icon(BitmapDescriptorFactory.fromResource(R.drawable.epingler)).title("Devices found in lat " + String.valueOf(prev_latitude) + " and longitude " + String.valueOf(prev_longitude)));
 
+                            currentPosMarker.remove();
+
+                        }
+
+                        currentPosMarker = mMap.addMarker(new MarkerOptions().position(test).icon(BitmapDescriptorFactory.fromResource(R.drawable.stickman)).title("CurrentPosition"));
+                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(test, 15));
                 }
 
             }
@@ -278,7 +296,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                     View popupLayout = inflater.inflate(R.layout.popup_layout, null, false);
                                     ListView popupListView = popupLayout.findViewById(R.id.popup_listView);
                                     TextView foundDevicesTextView = popupLayout.findViewById(R.id.textView);
-                                    foundDevicesTextView.setText(foundDevicesTextView.getText()+"\nlongitude: "+ clicked_longitude+"\nlatitude: "+clicked_latitude);
+                                    foundDevicesTextView.setText(foundDevicesTextView.getText() + "\nlongitude: " + clicked_longitude + "\nlatitude: " + clicked_latitude);
 //                                    FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) popupListView.getLayoutParams();
 //                                    params.height = FrameLayout.LayoutParams.MATCH_PARENT;
 
@@ -463,6 +481,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     protected void onDestroy() {
+        Log.d("destroy", "is called");
         super.onDestroy();
         // Don't forget to unregister the ACTION_FOUND receiver.
         unregisterReceiver(receiver);
@@ -470,19 +489,30 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     protected void onResume() {
-            handler.postDelayed(usageUpdate = new Runnable() {
-                @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-                public void run() {
+        handler.postDelayed(usageUpdate = new Runnable() {
+            @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+            public void run() {
 
-                        updateUsage(getApplicationContext());
-                        handler.postDelayed(usageUpdate, 30 * 1000);
-                }
-            }, 30 * 1000);
+                updateUsage(getApplicationContext());
+                handler.postDelayed(usageUpdate, 30 * 1000);
+            }
+        }, 30 * 1000);
         // Register listener for light sensor
         lightSensorManager.registerListener(this, lightSensor, SensorManager.SENSOR_DELAY_NORMAL);
         if (accelerometer != null) {
             shakeSensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
         }
+
+        if (mFusedLocationClient != null) {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(MapsActivity.this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, 2);
+
+            }
+            mFusedLocationClient.getLastLocation();
+
+        }
+
+
         super.onResume();
     }
 
@@ -655,6 +685,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     private int handleFirstLocation(Location location) {
+        Log.d("handlefirst","is called");
         double longitude = location.getLongitude();
         double latitude = location.getLatitude();
 
@@ -863,6 +894,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
 
+
     private void getAllInitLocationKeys() {
         dbRef = dbRootNode.getReference("accounts/" + currentUserKey + "/locations");
         dbRef.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
@@ -905,6 +937,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
     }
 
+    private int isLocationInBD(double longitude, double latitude) {
+        Log.d("tab size", String.valueOf(locationKeys.size()));
+        for (int i = 0; i < locationKeys.size(); i++) {
+            double loop_long = locationKeys.get(i).longitude;
+            double loop_lat = locationKeys.get(i).latitude;
+            if (!(isDistantEnough(longitude, loop_long)) && !(isDistantEnough(latitude, loop_lat))) {
+                return i;
+            }
+        }
+        return -1;
+
+    }
 
     private void getAllInitFavorites() {
 
@@ -949,6 +993,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         Log.d("currentUsername", snapShotUsername);
                         if (snapShotUsername.equals(currentUsername)) {
                             // REFERER A CE USER
+                            Log.d("realCurrentUsername", snapShotUsername);
+
                             currentUserKey = d.getKey();
                         }
                     }
@@ -968,6 +1014,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     private void handleMFusedLocationClient() {
+        Log.d("handlefusedclient","is called");
+
         // nécessité de demander l'autorisation pour l'accès aux localisations
         int permissionCheck1 = ContextCompat.checkSelfPermission(getBaseContext(), Manifest.permission.ACCESS_COARSE_LOCATION);
         int permissionCheck2 = ContextCompat.checkSelfPermission(getBaseContext(), Manifest.permission.ACCESS_FINE_LOCATION);
@@ -981,6 +1029,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     @RequiresApi(api = Build.VERSION_CODES.N)
                     @Override
                     public void onSuccess(Location location) {
+                        Log.d("last location","is called");
                         if (location != null) {
                             double latitude = location.getLatitude();
                             double longitude = location.getLongitude();
@@ -1008,6 +1057,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         }
                     }
                 });
+
+
         mFusedLocationClient.getLastLocation();
     }
 
@@ -1029,6 +1080,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     btn.setTextColor(Color.BLACK);
                     isDarkMode = false;
                 }
+
             }
         });
     }
@@ -1128,5 +1180,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
         return activeNetwork.isConnected();
     }
+
+
 
 }
