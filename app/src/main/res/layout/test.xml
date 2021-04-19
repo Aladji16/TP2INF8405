@@ -48,7 +48,7 @@
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
             android:headerDividersEnabled="true"
-            tools:visibility="visible" >
+            tools:visibility="visible">
 
         </ListView>
         <!--
@@ -111,6 +111,17 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/mapView"
         tools:visibility="visible" />
+
+    <Button
+        android:id="@+id/Language"
+        android:layout_width="75dp"
+        android:layout_height="44dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginBottom="60dp"
+        android:text="@string/LanguageSelect"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>
 
 
