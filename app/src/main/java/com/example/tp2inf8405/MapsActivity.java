@@ -19,14 +19,11 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
-import android.content.res.Configuration;
-import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
-import android.hardware.SensorListener;
 import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationManager;
@@ -37,7 +34,6 @@ import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -75,7 +71,6 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, SensorEventListener {
 
@@ -113,8 +108,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     boolean isDarkMode = false;
 
     //shake
-    private SensorManager shakeSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-    private Sensor accelerometer = shakeSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+    private SensorManager shakeSensorManager;
+    private Sensor accelerometer;
     private static final float SHAKE_THRESHOLD = 3.25f; // m/S**2
     private static final int MIN_TIME_BETWEEN_SHAKES_MILLISECS = 1000;
     private long lastShakeTime = Integer.MAX_VALUE;
@@ -147,6 +142,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         setSwapThemeListener();
         setupLightSensor();
+        setupShakeSensor();
         setAirplaneModeListener();
 
         if (!bluetoothAdapter.isEnabled()) {
@@ -502,11 +498,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onSensorChanged(SensorEvent event) {
         if (event.sensor.getType() == Sensor.TYPE_LIGHT) {
             float lightVal = event.values[0];
-            Log.d("onSensorChanged LIGHT", String.valueOf(lightVal));
+//            Log.d("onSensorChanged LIGHT", String.valueOf(lightVal));
             lightValTextView = (TextView) findViewById(R.id.lightVal);
-            lightValTextView.setText(getString(R.string.lightVal) + " " + lightVal);
+            lightValTextView.setText(getString(R.string.lightVal) + " " + lightVal + " lux");
         }
         else if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+
+
             long curTime = System.currentTimeMillis();
             if ((curTime - lastShakeTime) > MIN_TIME_BETWEEN_SHAKES_MILLISECS) {
 
@@ -514,17 +512,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 float y = event.values[1];
                 float z = event.values[2];
 
-                double acceleration = Math.sqrt(Math.pow(x, 2) +
-                        Math.pow(y, 2) +
-                        Math.pow(z, 2)) - SensorManager.GRAVITY_EARTH;
-
-                if (acceleration > SHAKE_THRESHOLD) {
-                    lastShakeTime = curTime;
-
-                    // Do wtv the shake is supposed to do here
-
-
-                }
+                TextView xText = findViewById(R.id.x_acc);
+                xText.setText(getString(R.string.x_acc)+" " + String.valueOf(x) + " m/s²");
+                TextView yText = findViewById(R.id.y_acc);
+                yText.setText(getString(R.string.y_acc)+" " + String.valueOf(y) + " m/s²");
+                TextView zText = findViewById(R.id.z_acc);
+                zText.setText(getString(R.string.z_acc)+" " + String.valueOf(z) + " m/s²");
             }
         }
     }
@@ -1108,6 +1101,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         lightSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         lightSensor = lightSensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
         Log.d("LightSensor", "setup complete!");
+    }
+
+    private void setupShakeSensor() {
+        shakeSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        accelerometer = shakeSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        Log.d("ShakeSensor", "setup complete!");
+
     }
 
 }

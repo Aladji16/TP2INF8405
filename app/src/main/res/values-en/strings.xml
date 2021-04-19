@@ -33,4 +33,7 @@
     <string name="homePage" translatable="true">Home page</string>
     <string name="connect" translatable="true">Connect</string>
     <string name="createAccount" translatable="true">Create an account</string>
+    <string name="x_acc">x-axis acceleration:</string>
+    <string name="y_acc">y-axis acceleration:</string>
+    <string name="z_acc">z-axis acceleration:</string>
 </resources>
