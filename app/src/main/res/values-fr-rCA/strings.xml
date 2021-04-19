@@ -29,4 +29,5 @@
     <string name="DownlinkVal" translatable="true">Téléchargement: </string>
     <string name="title_activity_main_view" translatable="true">MainView</string>
     <string name="LanguageSelect" translatable="true">EN</string>
+    <string name="lightVal" translatable="true">Lumière: </string>
 </resources>
