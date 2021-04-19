@@ -129,6 +129,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         setSwapThemeListener();
         setLanguageListener();
+        setAirplaneModeListener();
 
         if (!bluetoothAdapter.isEnabled()) {
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
@@ -999,7 +1000,25 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
     }
 
-
+    private void setAirplaneModeListener() {
+        IntentFilter intIf = new IntentFilter("android.intent.action.AIRPLANE_MODE");
+        BroadcastReceiver bR = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (intent.getBooleanExtra("state", false)) {
+                    //Close bluetooth
+                    bluetoothAdapter.disable();
+                } else {
+                    //Activate bluetooth
+                    if (!bluetoothAdapter.isEnabled()) {
+                        Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                        startActivityForResult(enableBtIntent, 1);
+                    }
+                }
+            }
+        };
+        getApplicationContext().registerReceiver(bR, intIf);
+    }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     public void updateUsage(Context context) {
