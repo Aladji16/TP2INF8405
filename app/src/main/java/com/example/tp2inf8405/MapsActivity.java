@@ -330,11 +330,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                             button.setOnClickListener(new View.OnClickListener() {
                                                 @Override
                                                 public void onClick(View view) {
-                                                    String toastText = "Full device information : \n" +
-                                                            "Name : " + finalName + "\n" +
-                                                            "Alias : " + finalAlias + "\n" +
-                                                            "Mac address : " + finalMac_addr + "\n" +
-                                                            "Device type : " + finalType;
+                                                    String toastText = getString(R.string.device_full_info) + "\n" +
+                                                            getString(R.string.device_name_info) + " " + finalName + "\n" +
+                                                            getString(R.string.device_alias_info) + " " + finalAlias + "\n" +
+                                                            getString(R.string.device_macAddr_info) + " " + finalMac_addr + "\n" +
+                                                            getString(R.string.device_type_info) + " " + finalType;
                                                     //affichage infos sur l'écran
                                                     Toast toast = Toast.makeText(getApplicationContext(), toastText, Toast.LENGTH_LONG);
                                                     toast.show();
@@ -402,28 +402,28 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 currentDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 String deviceName = currentDevice.getName();
                 if (deviceName == null) {
-                    deviceName = "Unknown";
+                    deviceName = getString(R.string.device_unknown);
                 }
                 String deviceAlias = null;
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
                     deviceAlias = currentDevice.getAlias();
                 }
                 if (deviceAlias == null) {
-                    deviceAlias = "Unknown";
+                    deviceAlias = getString(R.string.device_unknown);
                 }
                 String deviceType = " ";
                 switch (currentDevice.getType()) {
                     case BluetoothDevice.DEVICE_TYPE_CLASSIC:
-                        deviceType = "Classic";
+                        deviceType = getString(R.string.device_classic);
                         break;
                     case BluetoothDevice.DEVICE_TYPE_LE:
-                        deviceType = "Low Energy";
+                        deviceType = getString(R.string.device_low_energy);
                         break;
                     case BluetoothDevice.DEVICE_TYPE_DUAL:
-                        deviceType = "Dual";
+                        deviceType = getString(R.string.device_dual);
                         break;
                     case BluetoothDevice.DEVICE_TYPE_UNKNOWN:
-                        deviceType = "Unknown";
+                        deviceType = getString(R.string.device_unknown);
                         break;
                 }
 
@@ -590,14 +590,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private void buildAlertMessageNoGps() {
         final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage("Your GPS seems to be disabled, do you want to enable it?")
+        builder.setMessage(getString(R.string.gps_enable_prompt))
                 .setCancelable(false)
-                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                .setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
                     public void onClick(final DialogInterface dialog, final int id) {
                         startActivity(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS));
                     }
                 })
-                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                .setNegativeButton(getString(R.string.no), new DialogInterface.OnClickListener() {
                     public void onClick(final DialogInterface dialog, final int id) {
                         dialog.cancel();
                     }
@@ -647,11 +647,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             button.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    String toastText = "Full device information : \n" +
-                            "Name : " + name + "\n" +
-                            "Alias : " + alias + "\n" +
-                            "Mac address : " + macAddr + "\n" +
-                            "Device type : " + type;
+                    String toastText = getString(R.string.device_full_info) + "\n" +
+                            getString(R.string.device_name_info) + " " + name + "\n" +
+                            getString(R.string.device_alias_info) + " " + alias + "\n" +
+                            getString(R.string.device_macAddr_info) + " " + macAddr + "\n" +
+                            getString(R.string.device_type_info) + " " + type;
                     //affichage infos sur l'écran
                     Toast toast = Toast.makeText(getApplicationContext(), toastText, Toast.LENGTH_LONG);
                     toast.show();
@@ -795,11 +795,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         //propositions de fonctionnalités
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MapsActivity.this);
-        alertDialogBuilder.setTitle("Fonctionnalités : \n");
+        alertDialogBuilder.setTitle("Options : \n");
         if (favoritesList.contains(discoveredDevice.mac_addr)) {
             //on ne considère pas ici la fonctionnalité "comment y aller" comme nous sommes déjà à l'emplacement
             alertDialogBuilder.setItems(new CharSequence[]
-                            {"Retirer des favoris", "Partager"},
+                            {getString(R.string.remove_favorite_option), getString(R.string.share_option)},
                     new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
@@ -818,7 +818,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         } else {
             //on ne considère pas ici la fonctionnalité "comment y aller" comme nous sommes déjà à l'emplacement
             alertDialogBuilder.setItems(new CharSequence[]
-                            {"Ajouter aux favoris", "Partager"},
+                            {getString(R.string.add_favorite_option), getString(R.string.share_option)},
                     new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
@@ -849,7 +849,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         alertDialogBuilder.setTitle("Fonctionnalités : \n");
         if (favoritesList.contains(discoveredDevice.mac_addr)) {
             alertDialogBuilder.setItems(new CharSequence[]
-                            {"Retirer des favoris", "Partager", "Comment y aller"},
+                            {getString(R.string.remove_favorite_option), getString(R.string.share_option), getString(R.string.direction_option)},
                     new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
@@ -871,7 +871,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         } else {
             //on ne considère pas ici la fonctionnalité "comment y aller" comme nous sommes déjà à l'emplacement
             alertDialogBuilder.setItems(new CharSequence[]
-                            {"Ajouter aux favoris", "Partager", "Comment y aller"},
+                            {getString(R.string.add_favorite_option), getString(R.string.share_option), getString(R.string.direction_option)},
                     new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {

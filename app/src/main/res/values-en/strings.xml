@@ -38,4 +38,23 @@
     <string name="y_acc">y-axis acceleration:</string>
     <string name="z_acc">z-axis acceleration:</string>
     <string name="bluetooth_off_message">Bluetooth has been disabled. You need to activate Bluetooth back to discover surrounding devices.</string>
+    <string name="gps_enable_prompt" translatable="true">Your GPS seems to be disabled, do you want to enable it?</string>
+    <string name="yes" translatable="true">Yes</string>
+    <string name="no" translatable="true">No</string>
+    <string name="device_unknown" translatable="true">Unknown</string>
+    <string name="device_classic" translatable="true">Classic</string>
+    <string name="device_low_energy" translatable="true">Low Energy</string>
+    <string name="device_dual" translatable="true">Dual</string>
+
+    <string name="device_full_info" translatable="true">Full device information: </string>
+    <string name="device_name_info" translatable="true">Name: </string>
+    <string name="device_alias_info" translatable="true">Alias: </string>
+    <string name="device_macAddr_info" translatable="true">MAC address: </string>
+    <string name="device_type_info" translatable="true">Device type: </string>
+
+    <string name="add_favorite_option" translatable="true">Add to favorites</string>
+    <string name="remove_favorite_option" translatable="true">Remove from favorites</string>
+    <string name="share_option" translatable="true">Share</string>
+    <string name="direction_option" translatable="true">Directions</string>
+
 </resources>
