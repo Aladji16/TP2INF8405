@@ -29,7 +29,7 @@
         android:layout_marginTop="12dp"
         android:layout_marginEnd="142dp"
         android:layout_marginRight="142dp"
-        android:text="Nom d'utilisateur :"
+        android:text="@string/profileUsername"
         android:textColor="#131010"
         android:textSize="15sp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -39,17 +39,17 @@
 
     <Button
         android:id="@+id/validate_username"
-        android:layout_width="84dp"
-        android:layout_height="31dp"
+        android:layout_width="120dp"
+        android:layout_height="40dp"
         android:layout_marginStart="160dp"
         android:layout_marginLeft="160dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="20dp"
         android:layout_marginEnd="160dp"
         android:layout_marginRight="160dp"
-        android:text="Valider"
+        android:text="@string/createAccountValidate"
         android:textSize="10sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/username_input" />
 
@@ -59,13 +59,12 @@
         android:layout_height="35dp"
         android:layout_marginStart="160dp"
         android:layout_marginLeft="160dp"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="28dp"
         android:layout_marginEnd="160dp"
         android:layout_marginRight="160dp"
-        android:text="Changer la photo de profil"
+        android:text="@string/configChangePFP"
         android:textSize="9sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/validate_username" />
 

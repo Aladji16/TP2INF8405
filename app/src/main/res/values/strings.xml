@@ -18,6 +18,7 @@
 <string name="userNotInDB" translatable="true">Cet utilisateur n\'existe pas.</string>
 <string name="userAlreadyInDB" translatable="true">Cet utilisateur existe déjà. Veuillez choisir un autre nom.</string>
 <string name="profileUsername" translatable="true">Nom d\'utilisateur: </string>
+<string name="createAccountValidate" translatable="true">Valider</string>
 <string name="configChangePFP" translatable="true">Changer la photo de profil</string>
 <string name="foundDevicesInfo" translatable="true">Dispositifs trouvés à :</string>
 
