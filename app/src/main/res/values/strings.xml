@@ -8,23 +8,24 @@
     <string name="about_member4">Aladji Faye</string>
     <string name="about_group">Groupe 01</string>
     <string name="about_version">Version 1.0.0</string>
-    <string name="title_activity_main_view">MainView</string>
     <!-- Strings used for fragments for navigation -->
-    <string name="first_fragment_label">First Fragment</string>
-    <string name="second_fragment_label">Second Fragment</string>
-    <string name="next">Next</string>
-    <string name="previous">Previous</string>
-    <string name="profileBtn">Profile</string>
-    <string name="swapThemeBtn">Swap Theme</string>
-    <string name="userNotInDB">This user does not exist.</string>
-    <string name="userAlreadyInDB">This user already exists. Please choose another name.</string>
-    <string name="profileUsername">Nom d\'utilisateur: </string>
-    <string name="configChangePFP">Changer la photo de profil</string>
-    <string name="foundDevicesInfo">Devices found at :</string>
+    <string name="first_fragment_label" translatable="true">First Fragment</string>
+    <string name="second_fragment_label" translatable="true">Second Fragment</string>
+    <string name="next" translatable="true">Next</string>
+    <string name="previous" translatable="true">Previous</string>
+    <string name="profileBtn" translatable="true">Profile</string>
+    <string name="swapThemeBtn" translatable="true">Swap Theme</string>
+    <string name="userNotInDB" translatable="true">This user does not exist.</string>
+    <string name="userAlreadyInDB" translatable="true">This user already exists. Please choose another name.</string>
+    <string name="profileUsername" translatable="true">Username: </string>
+    <string name="configChangePFP" translatable="true">Change profile picture</string>
+    <string name="foundDevicesInfo" translatable="true">Devices found at :</string>
 
-    <string name="hello_first_fragment">Hello first fragment</string>
-    <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
-    <string name="batteryLevel">Battery: </string>
-    <string name="UplinkVal">Upload: </string>
-    <string name="DownlinkVal">Download: </string>
+    <string name="hello_first_fragment" translatable="true">Hello first fragment</string>
+    <string name="hello_second_fragment" translatable="true">Hello second fragment. Arg: %1$s</string>
+    <string name="batteryLevel" translatable="true">Battery: </string>
+    <string name="UplinkVal" translatable="true">Upload: </string>
+    <string name="DownlinkVal" translatable="true">Download: </string>
+    <string name="title_activity_main_view" translatable="true">MainView</string>
+    <string name="LanguageSelect" translatable="true">FR</string>
 </resources>
