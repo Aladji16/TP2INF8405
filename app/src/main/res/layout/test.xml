@@ -120,7 +120,7 @@
         android:layout_marginRight="80dp"
         android:layout_marginBottom="24dp"
         android:text="@string/lightVal"
-        android:textSize="18sp"
+        android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="@+id/mapView"
         app:layout_constraintEnd_toEndOf="@+id/mapView" />
 
@@ -132,7 +132,7 @@
         android:layout_marginRight="20dp"
         android:layout_marginBottom="208dp"
         android:text="@string/x_acc"
-        android:textSize="18sp"
+        android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="@+id/mapView"
         app:layout_constraintEnd_toEndOf="@+id/mapView" />
 
@@ -144,7 +144,7 @@
         android:layout_marginRight="20dp"
         android:layout_marginBottom="144dp"
         android:text="@string/y_acc"
-        android:textSize="18sp"
+        android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="@+id/mapView"
         app:layout_constraintEnd_toEndOf="@+id/mapView" />
 
@@ -156,7 +156,7 @@
         android:layout_marginRight="20dp"
         android:layout_marginBottom="84dp"
         android:text="@string/z_acc"
-        android:textSize="18sp"
+        android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="@+id/mapView"
         app:layout_constraintEnd_toEndOf="@+id/mapView" />
 
