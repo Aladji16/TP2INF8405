@@ -19,6 +19,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.location.Location;
@@ -30,6 +32,7 @@ import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -67,6 +70,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -124,6 +128,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         handleCurrentUsername();
 
         setSwapThemeListener();
+        setLanguageListener();
 
         if (!bluetoothAdapter.isEnabled()) {
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
@@ -956,6 +961,26 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     btn.setTextColor(Color.BLACK);
                     isDarkMode = false;
                 }
+            }
+        });
+    }
+
+    private void setLanguageListener() {
+        Button language = findViewById(R.id.Language);
+        language.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Resources res = getResources();
+                Configuration con = res.getConfiguration();
+                DisplayMetrics dm = res.getDisplayMetrics();
+                Locale en = new Locale("en");
+                if (con.locale == en) {
+                    con.locale = new Locale("fr-rCA");
+                } else {
+                    con.locale = en;
+                }
+                res.updateConfiguration(con, dm);
+                recreate();
             }
         });
     }
