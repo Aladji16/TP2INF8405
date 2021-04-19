@@ -137,7 +137,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         setSwapThemeListener();
         setupLightSensor();
-        setLanguageListener();
         setAirplaneModeListener();
 
         if (!bluetoothAdapter.isEnabled()) {

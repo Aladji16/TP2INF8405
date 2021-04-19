@@ -116,13 +116,14 @@
         android:id="@+id/lightVal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="20dp"
-        android:layout_marginRight="20dp"
+        android:layout_marginEnd="88dp"
+        android:layout_marginRight="88dp"
+        android:layout_marginBottom="24dp"
         android:text="@string/lightVal"
         android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="@+id/mapView"
         app:layout_constraintEnd_toEndOf="@+id/mapView" />
-    
+
 </androidx.constraintlayout.widget.ConstraintLayout>
 
 
