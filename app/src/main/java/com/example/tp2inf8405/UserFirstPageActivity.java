@@ -111,7 +111,6 @@ public class UserFirstPageActivity extends AppCompatActivity {
         Resources res = getResources();
         con = getResources().getConfiguration();
         DisplayMetrics dm = res.getDisplayMetrics();
-        Log.d("initAppLang non", String.valueOf(con.locale).substring(0,2));
         if (String.valueOf(con.locale).substring(0,2).equals("en")) {
             con.locale = new Locale("en");
         } else {
@@ -130,12 +129,9 @@ public class UserFirstPageActivity extends AppCompatActivity {
                 con = res.getConfiguration();
                 DisplayMetrics dm = res.getDisplayMetrics();
                 Locale en = new Locale("en");
-                Log.d("locale",con.locale.toString());
                 if (con.locale.equals(en)) {
-                    Log.d("oui","oui");
                     con.locale = new Locale("fr_FR");
                 } else {
-                    Log.d("non","non");
                     con.locale = en;
                 }
                 res.updateConfiguration(con, dm);
