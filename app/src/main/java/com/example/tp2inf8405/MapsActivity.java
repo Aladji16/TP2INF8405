@@ -193,7 +193,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         locationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult locationResult) {
-                Log.d("callback","is called");
 
                 Location location = locationResult.getLastLocation();
                 double latitude = location.getLatitude();
@@ -216,7 +215,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                     mLastLocation = location;
 
-                    Log.d("nearby device", "onSuccess location callback");
 
 
                     // RESET EVERYTHING
@@ -300,8 +298,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                     ListView popupListView = popupLayout.findViewById(R.id.popup_listView);
                                     TextView foundDevicesTextView = popupLayout.findViewById(R.id.textView);
                                     foundDevicesTextView.setText(foundDevicesTextView.getText() + "\nlongitude: " + clicked_longitude + "\nlatitude: " + clicked_latitude);
-//                                    FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) popupListView.getLayoutParams();
-//                                    params.height = FrameLayout.LayoutParams.MATCH_PARENT;
+
 
                                     for (DataSnapshot d : task.getResult().getChildren()) {
                                         if (!d.getKey().equals("latitude") && !d.getKey().equals("longitude")) {
@@ -344,7 +341,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                             });
 
                                             popupListView.addHeaderView(button);
-//                                            popupListView.setAdapter(new ArrayAdapter(getBaseContext(), R.layout.test));
 
                                         }
                                     }
@@ -609,7 +605,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     //    @RequiresApi(api = Build.VERSION_CODES.N)
     private void addNearbyDevice(String macAddr, String name, String alias, String type) {
 
-//        TextView liste = findViewById(R.id.textView);
 
         Device discoveredDevice = new Device();
         discoveredDevice.mac_addr = macAddr;
@@ -681,8 +676,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                             if (d.getKey().equals(deviceHardwareAddress) && !loopKey.equals(currentUserLocationKey)) {
                                 d.getRef().removeValue();
-                                Log.d("firebase MAC addr", "Removing device " + deviceHardwareAddress + " from location " + loopKey +
-                                        "\nTrue key = " + currentUserLocationKey);
                             }
                         }
                     }
@@ -714,10 +707,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     }
 
                     if (!isInBd) {
-                        Log.d("handleFirstLocation", currentUserKey);
                         dbRef = dbRootNode.getReference("accounts/" + currentUserKey + "/locations").push();
                         String locationKey = dbRef.getKey();
-                        Log.d("locationkey", locationKey);
                         currentUserLocationKey = locationKey;
                         locationKeys.add(new LocationKey(locationKey, latitude, longitude));
                         dbRef.child("latitude").setValue(latitude);
@@ -910,7 +901,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 } else {
                     // Load all location keys for current user
                     for (DataSnapshot d : task.getResult().getChildren()) {
-                        Log.d("firebase location key", d.getKey());
                         double loop_longitude = (double) d.child("longitude").getValue();
                         double loop_latitude = (double) d.child("latitude").getValue();
                         locationKeys.add(new LocationKey(d.getKey(), loop_latitude, loop_longitude));
@@ -943,7 +933,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     private int isLocationInBD(double longitude, double latitude) {
-        Log.d("tab size", String.valueOf(locationKeys.size()));
         for (int i = 0; i < locationKeys.size(); i++) {
             double loop_long = locationKeys.get(i).longitude;
             double loop_lat = locationKeys.get(i).latitude;
@@ -995,16 +984,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 } else {
                     for (DataSnapshot d: task.getResult().getChildren()) {
                         String snapShotUsername = d.child("username").getValue().toString();
-                        Log.d("currentUsername", snapShotUsername);
                         if (snapShotUsername.equals(currentUsername)) {
                             // REFERER A CE USER
-                            Log.d("realCurrentUsername", snapShotUsername);
-
                             currentUserKey = d.getKey();
                         }
                     }
-
-                    Log.d("currentuserkey", currentUserKey);
                     // Handle current user's locations and favorite devices
                     getAllInitLocationKeys();
                     getAllInitFavorites();
@@ -1031,15 +1015,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     @RequiresApi(api = Build.VERSION_CODES.N)
                     @Override
                     public void onSuccess(Location location) {
-                        Log.d("last location","is called");
                         if (location != null) {
                             double latitude = location.getLatitude();
                             double longitude = location.getLongitude();
 
                             if (mLastLocation == null || isDistantEnough(latitude, mLastLocation.getLatitude())
                                     || isDistantEnough(longitude, mLastLocation.getLongitude())) {
-
-                                Log.d("nearby device", "onSuccess 1st location");
 
                                 mLastLocation = location;
 
@@ -1054,8 +1035,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                             }
                             String time = String.valueOf(mLastLocation.getTime());
-                        } else {
-                            Log.d("location", "no location found");
                         }
                     }
                 });
@@ -1162,13 +1141,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         // a particular sensor.
         lightSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         lightSensor = lightSensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
-        Log.d("LightSensor", "setup complete!");
     }
 
     private void setupShakeSensor() {
         shakeSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         accelerometer = shakeSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        Log.d("ShakeSensor", "setup complete!");
 
     }
 
