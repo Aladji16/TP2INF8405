@@ -157,24 +157,14 @@ public class UserCreateAccountActivity extends AppCompatActivity {
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0 &&
                         grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    // Permission is granted. Continue the action or workflow
-                    // in your app.
-                    Log.d("ok","t'es un bon");
                     takePicture();
                 }  else {
-                    // Explain to the user that the feature is unavailable because
-                    // the features requires a permission that the user has denied.
-                    // At the same time, respect the user's decision. Don't link to
-                    // system settings in an effort to convince the user to change
-                    // their decision.
                     String toastText = "Vous garderez la photo de profil par défaut.";
                     Toast toast = Toast.makeText(getApplicationContext(), toastText, Toast.LENGTH_LONG);
                     toast.show();
                 }
                 return;
         }
-        // Other 'case' lines to check for other
-        // permissions this app might request.
     }
 
 }
