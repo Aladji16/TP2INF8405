@@ -3,7 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/white">
 
     <TextView
         android:id="@+id/textView2"
@@ -16,7 +17,7 @@
         android:layout_marginRight="148dp"
         android:gravity="center|center_horizontal"
         android:text="@string/homePage"
-        android:textColor="#050505"
+        android:textColor="@color/black"
         android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
@@ -32,7 +33,7 @@
         android:layout_marginTop="40dp"
         android:layout_marginEnd="74dp"
         android:layout_marginRight="74dp"
-        android:textColor="#131010"
+        android:textColor="@color/black"
         android:textSize="15sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"

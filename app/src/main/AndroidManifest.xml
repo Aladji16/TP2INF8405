@@ -42,14 +42,16 @@
         <activity
             android:name=".UserFirstPageActivity"
             android:screenOrientation="landscape"
-            android:configChanges="locale|orientation">
+            android:configChanges="locale|orientation"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" >
 
         </activity>
         <activity
             android:name=".UserCreateAccountActivity"
             android:screenOrientation="landscape"
             android:parentActivityName=".UserFirstPageActivity"
-            android:configChanges="locale">
+            android:configChanges="locale"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".UserFirstPageActivity"/>
@@ -58,7 +60,8 @@
             android:name=".UserProfileActivity"
             android:screenOrientation="landscape"
             android:parentActivityName=".MapsActivity"
-            android:configChanges="locale">
+            android:configChanges="locale"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".MapsActivity"/>

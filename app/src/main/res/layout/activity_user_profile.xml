@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/white"
     tools:context=".UserProfileActivity">
 
     <ImageView
@@ -31,7 +32,7 @@
         android:layout_marginEnd="142dp"
         android:layout_marginRight="142dp"
         android:text="@string/profileUsername"
-        android:textColor="#131010"
+        android:textColor="@color/black"
         android:textSize="15sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"

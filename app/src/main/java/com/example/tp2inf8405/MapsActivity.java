@@ -1045,6 +1045,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private void setSwapThemeListener() {
         Button btn = findViewById(R.id.btn);
+        Button profileBtn = findViewById(R.id.profileBtn);
         ConstraintLayout container = (ConstraintLayout) findViewById(R.id.mainView);
 
         btn.setOnClickListener(new View.OnClickListener() {
@@ -1053,12 +1054,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 if (!isDarkMode) {
                     container.setBackgroundResource(R.color.black);
                     btn.setBackgroundColor(Color.rgb(77, 0, 153));
+                    profileBtn.setBackgroundColor(Color.rgb(77, 0, 153));
                     btn.setTextColor(Color.WHITE);
+                    profileBtn.setTextColor(Color.WHITE);
                     isDarkMode = true;
                 } else if (isDarkMode) {
                     container.setBackgroundResource(R.color.white);
                     btn.setBackgroundColor(Color.rgb(204, 153, 255));
                     btn.setTextColor(Color.BLACK);
+                    profileBtn.setBackgroundColor(Color.rgb(204, 153, 255));
+                    profileBtn.setTextColor(Color.BLACK);
                     isDarkMode = false;
                 }
 
